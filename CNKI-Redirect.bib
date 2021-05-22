@@ -1,0 +1,79 @@
+{
+	"request": [
+		{
+			"enable": true,
+			"name": "知网空间_cpfd|www",
+			"ruleType": "redirect",
+			"matchType": "regexp",
+			"pattern": "^https?:\\/\\/(cpfd|www)\\.cnki\\.com\\.cn\\/Article\\/([A-Z]{4})(total|Total|TOTAL)-(\\w+)\\.htm.*$",
+			"exclude": "",
+			"isFunction": false,
+			"action": "redirect",
+			"to": "https://chn.oversea.cnki.net/kcms/detail/detail.aspx?dbcode=$2&filename=$4",
+			"group": "CNKI"
+		},
+		{
+			"enable": true,
+			"name": "知网空间_cdmd",
+			"ruleType": "redirect",
+			"matchType": "regexp",
+			"pattern": "^https?:\\/\\/cdmd\\.cnki\\.com\\.cn\\/Article\\/([A-Z]{4})-\\d+-(\\d+)\\.htm.*$",
+			"exclude": "",
+			"isFunction": false,
+			"action": "redirect",
+			"to": "https://chn.oversea.cnki.net/kcms/detail/detail.aspx?dbcode=$1&filename=$2.nh",
+			"group": "CNKI"
+		},
+		{
+			"enable": true,
+			"name": "知网_dbcode",
+			"ruleType": "redirect",
+			"matchType": "regexp",
+			"pattern": "^https?:\\/\\/(?!ste\\.cnki)\\S*\\.cnki\\.net\\/(kcms|KCMS)\\/detail\\/detail\\.aspx\\?(?=.*dbcode\\=(\\w+))(?=.*filename\\=([\\w\\.]+)).*$",
+			"exclude": "",
+			"isFunction": false,
+			"action": "redirect",
+			"to": "https://chn.oversea.cnki.net/kcms/detail/detail.aspx?dbcode=$2&filename=$3",
+			"group": "CNKI"
+		},
+		{
+			"enable": true,
+			"name": "知网_dbname",
+			"ruleType": "redirect",
+			"matchType": "regexp",
+			"pattern": "^https?:\\/\\/(?!ste\\.cnki)\\S*\\.cnki\\.net\\/(kcms|KCMS)\\/detail\\/detail\\.aspx\\?(?!.*dbcode\\=\\w+)(?=.*dbname\\=(\\w+))(?=.*filename\\=([\\w\\.]+)).*$",
+			"exclude": "",
+			"isFunction": false,
+			"action": "redirect",
+			"to": "https://chn.oversea.cnki.net/kcms/detail/detail.aspx?dbname=$2&filename=$3",
+			"group": "CNKI"
+		},
+		{
+			"enable": true,
+			"name": "知网_ste_dbcode",
+			"ruleType": "redirect",
+			"matchType": "regexp",
+			"pattern": "^https?:\\/\\/ste\\.cnki\\.net\\/(kcms|KCMS)\\/detail\\/detail\\.aspx\\?(?=.*dbcode\\=(\\w+))(?=.*filename\\=([\\w\\.]+)).*$",
+			"exclude": "",
+			"isFunction": false,
+			"action": "redirect",
+			"to": "https://ste.cnki.net/kcms/detail/detail.aspx?dbcode=$2&filename=$3",
+			"group": "CNKI"
+		},
+		{
+			"enable": true,
+			"name": "知网_ste_dbname",
+			"ruleType": "redirect",
+			"matchType": "regexp",
+			"pattern": "^https?:\\/\\/ste\\.cnki\\.net\\/(kcms|KCMS)\\/detail\\/detail\\.aspx\\?(?!.*dbcode\\=\\w+)(?=.*dbname\\=(\\w+))(?=.*filename\\=([\\w\\.]+)).*$",
+			"exclude": "",
+			"isFunction": false,
+			"action": "redirect",
+			"to": "https://ste.cnki.net/kcms/detail/detail.aspx?dbname=$2&filename=$3",
+			"group": "CNKI"
+		}
+	],
+	"sendHeader": [],
+	"receiveHeader": [],
+	"receiveBody": []
+}
