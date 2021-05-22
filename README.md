@@ -8,4 +8,9 @@ Header Editor规则：将知网部分界面重定向到海外版知网
 
 [Firefox](https://addons.mozilla.org/zh-CN/firefox/addon/header-editor/)
 
+[GitHub](https://github.com/FirefoxBar/HeaderEditor)
+
 ### Step 2: 导入规则
+
+在Header Editor中导入bib文件
+
