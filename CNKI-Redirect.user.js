@@ -35,24 +35,14 @@ https://chn.oversea.cnki.net/kns/defaultresult/index?&kw=%s
         window.location.href = window.location.href.replace(/^https?:\/\/www\.cnki\.com\.cn\/article\/(\w{4})total-(\w+)\.htm.*$/i, 'https://chn.oversea.cnki.net/kcms/detail/detail.aspx?dbcode=$1&filename=$2');
     };
 
-    //知网-非ste
-    if (window.location.href.match(/^https?:\/\/(?!ste\.cnki)\S*\.?cnki\.net\/kcms\/detail\/detail\.aspx\?(?=.*dbcode\=(\w+))(?=.*filename\=([\w\.]+))/i)) {
-        window.location.href = window.location.href.replace(/^https?:\/\/(?!ste\.cnki)\S*\.?cnki\.net\/kcms\/detail\/detail\.aspx\?(?=.*dbcode\=(\w+))(?=.*filename\=([\w\.]+)).*$/i, 'https://chn.oversea.cnki.net/kcms/detail/detail.aspx?dbcode=$1&filename=$2');
+    //知网-dbcode
+    if (window.location.href.match(/^https?:\/\/\S*\.?cnki\.net\/kcms\/detail\/detail\.aspx\?(?=.*dbcode\=(\w+))(?=.*filename\=([\w\.]+))/i)) {
+        window.location.href = window.location.href.replace(/^https?:\/\/\S*\.?cnki\.net\/kcms\/detail\/detail\.aspx\?(?=.*dbcode\=(\w+))(?=.*filename\=([\w\.]+)).*$/i, 'https://chn.oversea.cnki.net/kcms/detail/detail.aspx?dbcode=$1&filename=$2');
     };
 
-    //知网-非ste-无dbcode
-    if (window.location.href.match(/^https?:\/\/(?!ste\.cnki)\S*\.?cnki\.net\/kcms\/detail\/detail\.aspx\?(?!.*dbcode\=\w+)(?=.*dbname\=(\w+))(?=.*filename\=([\w\.]+))/i)) {
-        window.location.href = window.location.href.replace(/^https?:\/\/(?!ste\.cnki)\S*\.?cnki\.net\/kcms\/detail\/detail\.aspx\?(?!.*dbcode\=\w+)(?=.*dbname\=(\w+))(?=.*filename\=([\w\.]+)).*$/i, 'https://chn.oversea.cnki.net/kcms/detail/detail.aspx?dbcode=$1&filename=$2');
-    };
-
-    //知网-ste
-    if (window.location.href.match(/^https?:\/\/ste\.cnki\.net\/kcms\/detail\/detail\.aspx\?(?=.*dbcode\=(\w+))(?=.*filename\=([\w\.]+))/i)) {
-        window.location.href = window.location.href.replace(/^https?:\/\/ste\.cnki\.net\/kcms\/detail\/detail\.aspx\?(?=.*dbcode\=(\w+))(?=.*filename\=([\w\.]+)).*$/i, 'https://chn.oversea.cnki.net/kcms/detail/detail.aspx?dbcode=$1&filename=$2');
-    };
-
-    //知网-ste-无dbcode
-    if (window.location.href.match(/^https?:\/\/ste\.cnki\.net\/kcms\/detail\/detail\.aspx\?(?!.*dbcode\=\w+)(?=.*dbname\=(\w+))(?=.*filename\=([\w\.]+))/i)) {
-        window.location.href = window.location.href.replace(/^https?:\/\/ste\.cnki\.net\/kcms\/detail\/detail\.aspx\?(?!.*dbcode\=\w+)(?=.*dbname\=(\w+))(?=.*filename\=([\w\.]+)).*$/i, 'https://chn.oversea.cnki.net/kcms/detail/detail.aspx?dbcode=$1&filename=$2');
+    //知网-无dbcode
+    if (window.location.href.match(/^https?:\/\/\S*\.?cnki\.net\/kcms\/detail\/detail\.aspx\?(?!.*dbcode\=\w+)(?=.*dbname\=(\w+))(?=.*filename\=([\w\.]+))/i)) {
+        window.location.href = window.location.href.replace(/^https?:\/\/\S*\.?cnki\.net\/kcms\/detail\/detail\.aspx\?(?!.*dbcode\=\w+)(?=.*dbname\=(\w+))(?=.*filename\=([\w\.]+)).*$/i, 'https://chn.oversea.cnki.net/kcms/detail/detail.aspx?dbcode=$1&filename=$2');
     };
 
 })();
