@@ -4,7 +4,7 @@
 
 ## 方法1：油猴脚本
 
-在浏览器中安装油猴插件后安装[此脚本](https://raw.githubusercontent.com/MkQtS/CNKI-Redirect/main/CNKI-Redirect.js)
+在浏览器中安装油猴插件后安装[此脚本](https://raw.githubusercontent.com/MkQtS/CNKI-Redirect/main/CNKI-Redirect.user.js)
 
 ## 方法2：Header Editor
 
