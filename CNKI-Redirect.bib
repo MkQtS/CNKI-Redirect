@@ -31,8 +31,20 @@
 			"group": "CNKI",
 			"isFunction": false,
 			"matchType": "regexp",
+			"name": "知网空间_cyfd",
+			"pattern": "^https?:\\/\\/cyfd\\.cnki\\.com\\.cn\\/(article|Article|ARTICLE)\\/(\\w+)\\.htm.*$",
+			"ruleType": "redirect",
+			"to": "https://chn.oversea.cnki.net/kcms/detail/detail.aspx?dbcode=CYFD&filename=$2"
+		},
+		{
+			"action": "redirect",
+			"enable": true,
+			"exclude": "",
+			"group": "CNKI",
+			"isFunction": false,
+			"matchType": "regexp",
 			"name": "知网_dbcode",
-			"pattern": "^https?:\\/\\/\\S*\\.?cnki\\.net\\/(kcms|Kcms|KCMS)\\/detail\\/detail\\.aspx\\?(?=.*dbcode\\=(\\w+))(?=.*filename\\=([\\w\\.]+)).*$",
+			"pattern": "^https?:\\/\\/\\w*\\.?cnki\\.net\\/(kcms|Kcms|KCMS)\\/detail\\/detail\\.aspx\\?(?=.*dbcode\\=(\\w+))(?=.*filename\\=([\\w\\.]+)).*$",
 			"ruleType": "redirect",
 			"to": "https://chn.oversea.cnki.net/kcms/detail/detail.aspx?dbcode=$2&filename=$3"
 		},
@@ -44,7 +56,7 @@
 			"isFunction": false,
 			"matchType": "regexp",
 			"name": "知网_dbname",
-			"pattern": "^https?:\\/\\/\\S*\\.?cnki\\.net\\/(kcms|Kcms|KCMS)\\/detail\\/detail\\.aspx\\?(?!.*dbcode\\=\\w+)(?=.*dbname\\=(\\w+))(?=.*filename\\=([\\w\\.]+)).*$",
+			"pattern": "^https?:\\/\\/\\w*\\.?cnki\\.net\\/(kcms|Kcms|KCMS)\\/detail\\/detail\\.aspx\\?(?!.*dbcode\\=\\w+)(?=.*dbname\\=(\\w+))(?=.*filename\\=([\\w\\.]+)).*$",
 			"ruleType": "redirect",
 			"to": "https://chn.oversea.cnki.net/kcms/detail/detail.aspx?dbname=$2&filename=$3"
 		}

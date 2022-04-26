@@ -6,6 +6,8 @@
 // @icon         https://cnki.net/favicon.ico
 // @author       MkQtS
 // @homepage     https://github.com/MkQtS/CNKI-Redirect
+// @updateURL    https://raw.githubusercontent.com/MkQtS/CNKI-Redirect/main/CNKI-Redirect.user.js
+// @downloadURL  https://raw.githubusercontent.com/MkQtS/CNKI-Redirect/main/CNKI-Redirect.user.js
 // @match        *://cnki.net/*
 // @match        *://*.cnki.net/*
 // @match        *://*.cnki.com.cn/*
