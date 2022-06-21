@@ -2,7 +2,7 @@
 // @name         重定向知网至海外版
 // @namespace    cnki_redirect_to_oversea
 // @description  将部分知网界面重定向到海外版知网，支持多数知网文献页、知网空间和手机知网。
-// @version      1.3
+// @version      1.4
 // @icon         https://cnki.net/favicon.ico
 // @author       MkQtS
 // @homepage     https://github.com/MkQtS/CNKI-Redirect
@@ -71,8 +71,8 @@
             break;
         case 'wap':
             var wap_article_info = document.getElementById('a_download').onclick.toString();
-            dbcode = wap_article_info.replace(/^[\S\s]+GetDownloadInfo_\d+\('\w+','(\w+)'\)[\S\s]+$/, '$1');
-            filename = wap_article_info.replace(/^[\S\s]+GetDownloadInfo_\d+\('(\w+)','\w+'\)[\S\s]+$/, '$1');
+            dbcode = wap_article_info.replace(/^[\S\s]+GetDownloadInfo_\d+\('[\w\.]+','(\w+)'[\S\s]+$/, '$1');
+            filename = wap_article_info.replace(/^[\S\s]+GetDownloadInfo_\d+\('([\w\.]+)','\w+'[\S\s]+$/, '$1');
             break;
         case 'common':
             dbcode = document.getElementById('paramdbcode').value;
