@@ -2,7 +2,7 @@
 // @name         重定向知网至海外版
 // @namespace    cnki_redirect_to_oversea
 // @description  将部分知网界面重定向到海外版知网，支持多数知网文献页、知网空间和手机知网。
-// @version      1.6
+// @version      1.7
 // @icon         https://cnki.net/favicon.ico
 // @author       MkQtS
 // @homepage     https://github.com/MkQtS/CNKI-Redirect
@@ -76,7 +76,9 @@ switch (situation) {
     case 'common': {
         let dbcode = document.getElementById('paramdbcode').value;
         let filename = document.getElementById('paramfilename').value;
-        fileID = "dbcode=" + dbcode + "&filename=" + filename;
+        if (dbcode && filename) {
+            fileID = "dbcode=" + dbcode + "&filename=" + filename;
+        };
         break;
     };
 };
