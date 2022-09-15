@@ -2,7 +2,7 @@
 // @name         重定向知网至海外版
 // @namespace    cnki_to_oversea
 // @description  将部分知网界面重定向到海外版知网，支持多数知网文献页、知网空间、知网文化及手机知网。
-// @version      2.0
+// @version      2.1
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAB10lEQVQ4jZVSP8hpcRj+nZs6oiPkpFBkoCxnQCeT0rdQyiCZDAwYTOQsBsOR/aRshlMymsSK/JkMysDgz3KOZDmO8t/vDu79fO51b33P9r71vO/7PO+DwKIbfAuw6Ia/IQhCPB6nKEoURfgWRbfkK/l0OrXb7dlsZrPZIpHI2wU/vha322273fp8Pq/X+6+LXgij0Wi32+VyueVymc1m1+v1/zRsNhuCIFQqVSwWUyqVarV6Op1+Hs9xnCiKsOh+Emia/pyi0+mazSaE8HK59Pv9TCbjcDjy+fyL6FAohGEYwzD3+73RaJjN5mq1utlsptOpxWK5Xq/dbhd8vNq63+8ZhjEajbVabbFYGAyGRCJxPB5Pp1MwGOx0Os8Nk8mE4zipVDoYDFarVblcdjqdBEFgGIaiaKVSQRDE5XKBHpAAAHie93g85/PZbrfP53OKotLptEajsVqtrVZLJpPRNO33+w+HAwaABAAAISRJEsfxbDZbr9f1er1Go0EQJJVKDYfDXq9XKpU8Ho9cLn/aKgjCw9lAIFAoFMLh8Gw2e3T2+/2baCgUCp7no9EoSZLRaNRkMkEIWZbFcfyPv/0ijMfjh6HJZFKr1bIsi6KoRCIBfwH5brx/AseDLUJKQoGcAAAAAElFTkSuQmCC
 // @author       MkQtS
 // @homepage     https://github.com/MkQtS/CNKI-Redirect
@@ -11,6 +11,7 @@
 // @match        *://cnki.net/*
 // @match        *://*.cnki.net/*
 // @match        *://*.cnki.com.cn/*
+// @exclude      *://*.cnki.net/kcms/detail/frame/list.aspx*
 // @grant        none
 // ==/UserScript==
 
@@ -49,6 +50,7 @@ const CNKITYPE = {
 
 for (let i in CNKITYPE) {
     if (CNKITYPE[i].Check.test(currentUrl)) {
+        console.log('[CNKI-Redirect] Rule for %s matched.', i);
         situation = CNKITYPE[i].Type;
         break;
     };
@@ -105,6 +107,7 @@ switch (situation) {
 };
 
 if (fileID) {
+    console.log('[CNKI-Redirect] File ID: ' + fileID);
     let newUrl = target + fileID;
     window.location.href = newUrl;
 };

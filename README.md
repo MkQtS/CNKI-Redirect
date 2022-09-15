@@ -8,7 +8,7 @@
 
 - 部分文献只在海外版提供完整PDF下载（海外版也能下载CAJ格式）
 - 手机知网`wap.cnki.net`不能通过IP免登陆下载文献
-- 知网文化`wh.cnki.net`不能下载CAJ
+- 知网文化`wh.cnki.net`不能下载CAJ格式
 
 ## 使用方法
 
