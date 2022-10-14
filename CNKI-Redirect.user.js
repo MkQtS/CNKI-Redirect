@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         重定向知网至海外版
 // @namespace    cnki_to_oversea
-// @description  将部分知网界面重定向到海外版知网，支持多数知网文献页、知网空间、知网文化及手机知网。
-// @version      2.2
+// @description  将知网文献页重定向到海外版知网，支持多数知网文献页、知网空间、知网百科、知网阅读、知网文化及手机知网。
+// @version      2.3
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAB10lEQVQ4jZVSP8hpcRj+nZs6oiPkpFBkoCxnQCeT0rdQyiCZDAwYTOQsBsOR/aRshlMymsSK/JkMysDgz3KOZDmO8t/vDu79fO51b33P9r71vO/7PO+DwKIbfAuw6Ia/IQhCPB6nKEoURfgWRbfkK/l0OrXb7dlsZrPZIpHI2wU/vha322273fp8Pq/X+6+LXgij0Wi32+VyueVymc1m1+v1/zRsNhuCIFQqVSwWUyqVarV6Op1+Hs9xnCiKsOh+Emia/pyi0+mazSaE8HK59Pv9TCbjcDjy+fyL6FAohGEYwzD3+73RaJjN5mq1utlsptOpxWK5Xq/dbhd8vNq63+8ZhjEajbVabbFYGAyGRCJxPB5Pp1MwGOx0Os8Nk8mE4zipVDoYDFarVblcdjqdBEFgGIaiaKVSQRDE5XKBHpAAAHie93g85/PZbrfP53OKotLptEajsVqtrVZLJpPRNO33+w+HAwaABAAAISRJEsfxbDZbr9f1er1Go0EQJJVKDYfDXq9XKpU8Ho9cLn/aKgjCw9lAIFAoFMLh8Gw2e3T2+/2baCgUCp7no9EoSZLRaNRkMkEIWZbFcfyPv/0ijMfjh6HJZFKr1bIsi6KoRCIBfwH5brx/AseDLUJKQoGcAAAAAElFTkSuQmCC
 // @author       MkQtS
 // @homepage     https://github.com/MkQtS/CNKI-Redirect
@@ -23,15 +23,18 @@ const target = 'https://chn.oversea.cnki.net/kcms/detail/detail.aspx?';
 //const target = 'https://tra.oversea.cnki.net/kcms/detail/detail.aspx?';
 
 function GetSituation(url) {
-    var situation = 'skip';
     const CNKITYPE = {
         'ERROR': {
-            Check: /^https?:\/\/[^/]+\.cnki\.net\/kcms\/detail\/Error.*$/i,
+            Check: /^https?:\/\/[^/]+\.cnki\.net\/kcms\/detail\/error/i,
             Type: 'error'
         },
         'IDEAL': {
             Check: /^https?:\/\/(\w+\.)?oversea\.cnki\.net\/kcms\/detail\/detail\.aspx\?dbcode=[\w]+&filename=[\w\.]+$/i,
             Type: 'skip'
+        },
+        'MALL': {
+            Check: /^https?:\/\/mall\.cnki\.net\/magazine\/article\//i,
+            Type: 'mall'
         },
         'SPACE': {
             Check: /^https?:\/\/[^/]+\.cnki\.com\.cn\/article\//i,
@@ -45,12 +48,17 @@ function GetSituation(url) {
             Check: /^https?:\/\/wh\.cnki\.net\/article\/detail\//i,
             Type: 'wenhua'
         },
+        'XUEWEN': {
+            Check: /^https?:\/\/xuewen\.cnki\.net\/[\w\.-]+\.htm/i,
+            Type: 'xuewen'
+        },
         'COMMON': {
             Check: /^https?:\/\/([\w\.]+)?cnki\.net\/kcms\/detail/i,
             Type: 'common'
         },
     };
 
+    let situation = 'skip';
     for (let i in CNKITYPE) {
         if (CNKITYPE[i].Check.test(url)) {
             console.log('[CNKI-Redirect] Rule for %s matched.', i);
@@ -62,10 +70,19 @@ function GetSituation(url) {
 };
 
 function GetFileID(type, url) {
-    var fileID;
+    let fileID;
     switch (type) {
         case 'skip':
             break;
+        case 'mall': {
+            let dbcode = document.getElementById('articleType').value;
+            let filename = document.getElementById('articleFileName').value;
+            if (dbcode && filename) {
+                filename = filename.toUpperCase().replace(/^([^.]+)\.NH$/, '$1.nh');
+                fileID = 'dbcode=' + dbcode + '&filename=' + filename;
+            };
+            break;
+        };
         case 'space': {
             let spacetype = url.replace(/^https?:\/\/([^/]+)\.cnki\.com\.cn\/.+$/i, '$1');
             switch (spacetype) {
@@ -102,6 +119,9 @@ function GetFileID(type, url) {
             };
             break;
         };
+        case 'xuewen':
+            fileID = url.replace(/^https?:\/\/xuewen\.cnki\.net\/(\w+)-([\w\.]+)\.htm.*$/i, 'dbcode=$1&filename=$2');
+            break;
         case 'common': {
             let dbcode = document.getElementById('paramdbcode').value;
             let filename = document.getElementById('paramfilename').value;
@@ -131,7 +151,8 @@ else {
         let banCheck = GM_getValue('banRedirect');
         if (fileID == banCheck) {
             GM_setValue('banRedirect', 'clear');
-            console.log('[CNKI-Redirect] Already failed, so stay here.\nRefresh to retry.');
+            console.log('[CNKI-Redirect] Already failed, so stay here.');
+            console.log('[CNKI-Redirect] Refresh to try again.');
         }
         else {
             let source = [];
