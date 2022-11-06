@@ -2,7 +2,7 @@
 // @name         重定向知网至海外版
 // @namespace    cnki_to_oversea
 // @description  将知网文献页重定向至海外版以便下载文献。支持知网空间、知网百科、知网阅读、知网文化及手机知网。
-// @version      3.0
+// @version      3.1
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAB10lEQVQ4jZVSP8hpcRj+nZs6oiPkpFBkoCxnQCeT0rdQyiCZDAwYTOQsBsOR/aRshlMymsSK/JkMysDgz3KOZDmO8t/vDu79fO51b33P9r71vO/7PO+DwKIbfAuw6Ia/IQhCPB6nKEoURfgWRbfkK/l0OrXb7dlsZrPZIpHI2wU/vha322273fp8Pq/X+6+LXgij0Wi32+VyueVymc1m1+v1/zRsNhuCIFQqVSwWUyqVarV6Op1+Hs9xnCiKsOh+Emia/pyi0+mazSaE8HK59Pv9TCbjcDjy+fyL6FAohGEYwzD3+73RaJjN5mq1utlsptOpxWK5Xq/dbhd8vNq63+8ZhjEajbVabbFYGAyGRCJxPB5Pp1MwGOx0Os8Nk8mE4zipVDoYDFarVblcdjqdBEFgGIaiaKVSQRDE5XKBHpAAAHie93g85/PZbrfP53OKotLptEajsVqtrVZLJpPRNO33+w+HAwaABAAAISRJEsfxbDZbr9f1er1Go0EQJJVKDYfDXq9XKpU8Ho9cLn/aKgjCw9lAIFAoFMLh8Gw2e3T2+/2baCgUCp7no9EoSZLRaNRkMkEIWZbFcfyPv/0ijMfjh6HJZFKr1bIsi6KoRCIBfwH5brx/AseDLUJKQoGcAAAAAElFTkSuQmCC
 // @author       MkQtS
 // @license      MIT
@@ -114,9 +114,9 @@
             } case 'ste': {
                 let favfile = document.getElementById('addfavtokpc');
                 if (favfile) {
-                    let fileinfo = favfile.onclick.toString().replace(/^[\S\s]+AddFavToMyCnki\(([^)]+)\)[\S\s]+$/, '$1');
-                    dbcode = fileinfo.replace(/^[^,]+,\s+'([^']+)',\s+'[^']+'$/, '$1');
-                    filename = fileinfo.replace(/^[^,]+,\s+'[^']+',\s+'([^']+)'$/, '$1');
+                    let fileinfo = favfile.onclick.toString().replace(/^[\S\s]+AddFavToMyCnki\(([^)]+)\)[\S\s]+$/, '$1').replace(/^[^,]+,\s+'([^']+)',\s+'([^']+)'$/, '$1-$2');
+                    dbcode = fileinfo.replace(/^(\w+)-[\w\.]+$/, '$1');
+                    filename = fileinfo.replace(/^\w+-([\w\.]+)$/, '$1');
                 }
                 break;
             } case 'wap': {
@@ -161,11 +161,11 @@
             if (oddType !== -1) {
                 let commDB = ['CDMD', 'CDMD', 'CJFD', 'CCND', 'CIPD', 'CYFD', 'CJFD', 'CDMD', 'CIPD', 'CJFD', 'CDMD', 'CCND', 'CIPD', 'CYFD'];
                 dbcode = commDB[oddType];
-                console.log('[CNKI-Redirect] Convert dbcode from %s to %s', oddDB[oddType], commDB[oddType]);
+                console.log('[CNKI-Redirect] Convert dbcode from %s to %s.', oddDB[oddType], commDB[oddType]);
             }
             filename = filename.toUpperCase();
             if (dbcode == 'CDMD') {
-                filename = filename.replace(/^([\w\.]+)$/, '$1.NH').replace(/^([\w\.]+)(\.NH)+$/, '$1.nh');
+                filename = filename.replace(/^([\w\.]+)$/, '$1.NH').replace(/^([\w\.]+?)(\.NH)+$/, '$1.nh');
             }
             fileID = 'dbcode=' + dbcode + '&filename=' + filename;
             let fileID_Check = /^dbcode=\w+&filename=[\w\.]+$/;
@@ -240,8 +240,7 @@
                     console.log('[CNKI-Redirect] Redirect for this file is not allowed. Refresh to try again.');
                 } else {
                     window.stop();
-                    let source = [fileID, currentUrl];
-                    GM_setValue('source', source);
+                    GM_setValue('source', [fileID, currentUrl]);
                     window.location.href = targetSite + fileID;
                 }
             } else {
