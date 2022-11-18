@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         重定向知网至海外版
+// @name         重定向知网至海外版 — PDF、CAJ均可下载
 // @namespace    cnki_to_oversea
-// @description  将知网文献页重定向至海外版以便下载文献。支持知网空间、知网百科、知网阅读、知网文化及手机知网。
-// @version      3.1
+// @description  将知网文献页重定向至海外版以便下载文献。支持下载硕博论文PDF，支持机构IP登录，支持知网空间、知网拾贝、知网百科、知网阅读、知网文化、手机知网等站点。
+// @version      3.2
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAB10lEQVQ4jZVSP8hpcRj+nZs6oiPkpFBkoCxnQCeT0rdQyiCZDAwYTOQsBsOR/aRshlMymsSK/JkMysDgz3KOZDmO8t/vDu79fO51b33P9r71vO/7PO+DwKIbfAuw6Ia/IQhCPB6nKEoURfgWRbfkK/l0OrXb7dlsZrPZIpHI2wU/vha322273fp8Pq/X+6+LXgij0Wi32+VyueVymc1m1+v1/zRsNhuCIFQqVSwWUyqVarV6Op1+Hs9xnCiKsOh+Emia/pyi0+mazSaE8HK59Pv9TCbjcDjy+fyL6FAohGEYwzD3+73RaJjN5mq1utlsptOpxWK5Xq/dbhd8vNq63+8ZhjEajbVabbFYGAyGRCJxPB5Pp1MwGOx0Os8Nk8mE4zipVDoYDFarVblcdjqdBEFgGIaiaKVSQRDE5XKBHpAAAHie93g85/PZbrfP53OKotLptEajsVqtrVZLJpPRNO33+w+HAwaABAAAISRJEsfxbDZbr9f1er1Go0EQJJVKDYfDXq9XKpU8Ho9cLn/aKgjCw9lAIFAoFMLh8Gw2e3T2+/2baCgUCp7no9EoSZLRaNRkMkEIWZbFcfyPv/0ijMfjh6HJZFKr1bIsi6KoRCIBfwH5brx/AseDLUJKQoGcAAAAAElFTkSuQmCC
 // @author       MkQtS
 // @license      MIT
@@ -34,6 +34,9 @@
             }, 'MALL': {
                 Check: /^https?:\/\/mall\.cnki\.net\/magazine\/article\//i,
                 Type: 'mall'
+            }, 'MY': {
+                Check: /^https?:\/\/my\.cnki\.net\/documentdetail\.html\?/i,
+                Type: 'my'
             }, 'READ': {
                 Check: /^https?:\/\/read\.cnki\.net\/web\/\w+\/article\//i,
                 Type: 'read'
@@ -75,6 +78,11 @@
             case 'mall': {
                 dbcode = document.getElementById('articleType').value;
                 filename = document.getElementById('articleFileName').value;
+                break;
+            } case 'my': {
+                let urlParams = new URLSearchParams(url.toLowerCase().split('?')[1]);
+                dbcode = urlParams.get('productid');
+                filename = urlParams.get('filename');
                 break;
             } case 'read': {
                 let downfile = document.getElementById('a_download');
@@ -177,34 +185,6 @@
         return fileID;
     }
 
-    function AddReturnBtn(source) {
-        let retBtnLi = document.createElement('li');
-        retBtnLi.setAttribute('class', 'btn-go2src');
-        retBtnLi.setAttribute('style', 'background-color: rgb(238, 119, 85); color: rgb(255, 255, 255); text-align: center; border: none; border-radius: 4px;');
-        let retBtnA = document.createElement('a');
-        retBtnA.setAttribute('id', 'go2src');
-        const RETURNTEXT = {
-            'oversea.cnki.net': '🙃 Open original',
-            'chn.oversea.cnki.net': '🙃 打开源页面',
-            'tra.oversea.cnki.net': '🙃 打開源頁面',
-        }
-        retBtnA.textContent = RETURNTEXT[window.location.host] || '🙃';
-        retBtnA.setAttribute('title', source[1]);
-        retBtnA.addEventListener('click', () => {
-            GM_setValue('banRedirect', source[0]);
-            console.log('[CNKI-Redirect] Back to original...');
-            window.open(source[1], '_blank');
-        });
-        retBtnLi.appendChild(retBtnA);
-        let targetArea = document.getElementById('DownLoadParts').querySelector('.operate-btn');
-        if (!!targetArea) {
-            targetArea.appendChild(retBtnLi);
-        } else {
-            document.getElementById('DownLoadParts').appendChild(retBtnLi);
-        }
-        return 0;
-    }
-
     let currentUrl = window.location.href;
     let situation = GetSituation(currentUrl);
 
@@ -223,7 +203,33 @@
             console.log('[CNKI-Redirect] Ideal link, no redirect.');
             let source = GM_getValue('source');
             if (source[1] !== 'clear') {
-                AddReturnBtn(source);
+                (source => {
+                    let retBtnLi = document.createElement('li');
+                    retBtnLi.setAttribute('class', 'btn-go2src');
+                    retBtnLi.setAttribute('style', 'background-color: rgb(238, 119, 85); color: rgb(255, 255, 255); text-align: center; border: none; border-radius: 4px;');
+                    let retBtnA = document.createElement('a');
+                    retBtnA.setAttribute('id', 'go2src');
+                    const BTNTEXT = {
+                        'oversea.cnki.net': '🙃 Open original',
+                        'chn.oversea.cnki.net': '🙃 打开源页面',
+                        'tra.oversea.cnki.net': '🙃 打開源頁面',
+                    }
+                    retBtnA.textContent = BTNTEXT[window.location.host];
+                    retBtnA.setAttribute('title', source[1]);
+                    retBtnA.addEventListener('click', () => {
+                        GM_setValue('banRedirect', source[0]);
+                        console.log('[CNKI-Redirect] Back to original...');
+                        window.open(source[1], '_blank');
+                    });
+                    retBtnLi.appendChild(retBtnA);
+                    let targetArea = document.getElementById('DownLoadParts').querySelector('.operate-btn');
+                    if (!!targetArea) {
+                        targetArea.appendChild(retBtnLi);
+                    } else {
+                        document.getElementById('DownLoadParts').appendChild(retBtnLi);
+                    }
+                    return 0;
+                })(source);
                 GM_setValue('source', ['clear', 'clear']);
             }
             break;
