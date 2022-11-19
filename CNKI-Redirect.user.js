@@ -2,7 +2,7 @@
 // @name         重定向知网至海外版 — PDF、CAJ均可下载
 // @namespace    cnki_to_oversea
 // @description  将知网文献页重定向至海外版以便下载文献。支持下载硕博论文PDF，支持机构IP登录，支持知网空间、知网拾贝、知网百科、知网阅读、知网文化、手机知网等站点。
-// @version      3.2
+// @version      3.3
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAB10lEQVQ4jZVSP8hpcRj+nZs6oiPkpFBkoCxnQCeT0rdQyiCZDAwYTOQsBsOR/aRshlMymsSK/JkMysDgz3KOZDmO8t/vDu79fO51b33P9r71vO/7PO+DwKIbfAuw6Ia/IQhCPB6nKEoURfgWRbfkK/l0OrXb7dlsZrPZIpHI2wU/vha322273fp8Pq/X+6+LXgij0Wi32+VyueVymc1m1+v1/zRsNhuCIFQqVSwWUyqVarV6Op1+Hs9xnCiKsOh+Emia/pyi0+mazSaE8HK59Pv9TCbjcDjy+fyL6FAohGEYwzD3+73RaJjN5mq1utlsptOpxWK5Xq/dbhd8vNq63+8ZhjEajbVabbFYGAyGRCJxPB5Pp1MwGOx0Os8Nk8mE4zipVDoYDFarVblcdjqdBEFgGIaiaKVSQRDE5XKBHpAAAHie93g85/PZbrfP53OKotLptEajsVqtrVZLJpPRNO33+w+HAwaABAAAISRJEsfxbDZbr9f1er1Go0EQJJVKDYfDXq9XKpU8Ho9cLn/aKgjCw9lAIFAoFMLh8Gw2e3T2+/2baCgUCp7no9EoSZLRaNRkMkEIWZbFcfyPv/0ijMfjh6HJZFKr1bIsi6KoRCIBfwH5brx/AseDLUJKQoGcAAAAAElFTkSuQmCC
 // @author       MkQtS
 // @license      MIT
@@ -12,6 +12,7 @@
 // @match        *://*.cnki.net/*
 // @match        *://*.cnki.com.cn/*
 // @exclude      *://*.cnki.net/kcms/detail/frame/list.aspx*
+// @exclude      *://*.cnki.net/kcms2/video/*
 // @grant        GM_setValue
 // @grant        GM_getValue
 // ==/UserScript==
@@ -47,7 +48,7 @@
                 Check: /^https?:\/\/(ste|web02|web03)\.cnki\.net\/kcms\/detail\//i,
                 Type: 'ste'
             }, 'WAP': {
-                Check: /^https?:\/\/wap\.cnki\.net\/((touch\/web\/)|(\w+-[\w\.]+\.htm))/i,
+                Check: /^https?:\/\/wap\.cnki\.net\/((touch\/web\/\w+\/article)|(\w+-[\w\.]+\.htm))/i,
                 Type: 'wap'
             }, 'WENHUA': {
                 Check: /^https?:\/\/wh\.cnki\.net\/article\/detail\//i,
@@ -56,7 +57,7 @@
                 Check: /^https?:\/\/xuewen\.cnki\.net\/\w+-[\w\.]+\.htm/i,
                 Type: 'xuewen'
             }, 'COMMON': {
-                Check: /^https?:\/\/([\w\.]+)?cnki\.net\/kcms\/(article|detail)\//i,
+                Check: /^https?:\/\/([\w\.]+)?cnki\.net\/kcms\d*\/(article|detail)\//i,
                 Type: 'common'
             },
         };
@@ -76,8 +77,13 @@
         let dbcode, filename
         switch (type) {
             case 'mall': {
-                dbcode = document.getElementById('articleType').value;
-                filename = document.getElementById('articleFileName').value;
+                dbcode = document.getElementById('articleType')?.value;
+                filename = document.getElementById('articleFileName')?.value;
+                if (!dbcode || !filename) {
+                    let linkinfo = url.replace(/^https?:\/\/mall\.cnki\.net\/magazine\/article\/(\w+)\/([\w\.]+)\.htm.*$/i, '$1-$2');
+                    dbcode = linkinfo.replace(/^(\w+)-[\w\.]+$/, '$1');
+                    filename = linkinfo.replace(/^\w+-([\w\.]+)$/, '$1');
+                }
                 break;
             } case 'my': {
                 let urlParams = new URLSearchParams(url.toLowerCase().split('?')[1]);
@@ -85,11 +91,8 @@
                 filename = urlParams.get('filename');
                 break;
             } case 'read': {
-                let downfile = document.getElementById('a_download');
-                if (downfile) {
-                    dbcode = downfile.dataset.type;
-                    filename = downfile.dataset.filename;
-                }
+                dbcode = document.getElementById('a_download')?.dataset.type;
+                filename = document.getElementById('a_download')?.dataset.filename;
                 if (!dbcode || !filename) {
                     const DBLINK = ['conference', 'dissertation', 'journal', 'newspaper'];
                     const DBREAL = ['CIPD', 'CDMD', 'CJFD', 'CCND'];
@@ -98,41 +101,21 @@
                 }
                 break;
             } case 'space': {
-                let spacetype = url.replace(/^https?:\/\/([^/]+)\.cnki\.com\.cn\/.+$/i, '$1').toLowerCase();
-                switch (spacetype) {
-                    case 'cdmd': {
-                        dbcode = 'CDMD';
-                        filename = url.replace(/^https?:\/\/cdmd\.cnki\.com\.cn\/article\/\w+-\d+-(\d+)\.htm.*$/i, '$1');
-                        break;
-                    } case 'cpfd': {
-                        dbcode = 'CIPD';
-                        filename = url.replace(/^https?:\/\/cpfd\.cnki\.com\.cn\/article\/\w+total-([\w\.]+)\.htm.*$/i, '$1');
-                        break;
-                    } case 'cyfd': {
-                        dbcode = 'CYFD';
-                        filename = url.replace(/^https?:\/\/cyfd\.cnki\.com\.cn\/article\/([\w\.]+)\.htm.*$/i, '$1');
-                        break;
-                    } case 'www': {
-                        dbcode = url.replace(/^https?:\/\/www\.cnki\.com\.cn\/article\/(\w+)total-[\w\.]+\.htm.*$/i, '$1');
-                        filename = url.replace(/^https?:\/\/www\.cnki\.com\.cn\/article\/\w+total-([\w\.]+)\.htm.*$/i, '$1');
-                        break;
-                    } default: break;
-                }
+                let linkinfo = url.replace(/^https?:\/\/(\w+)\.cnki\.com\.cn\/article\/([\w\.-]+)\.htm.*$/i, '$2@$1').replace(/^(\w+)(-\d+-)|(total-)/i, '$1-').replace(/^([\w\.]+)@(\w+)$/, '$2-$1@$2');
+                dbcode = linkinfo.replace(/^(\w+)-[\w\.]+@\w+$/i, '$1');
+                filename = linkinfo.replace(/^\w+-([\w\.]+)@\w+$/i, '$1');
                 break;
             } case 'ste': {
-                let favfile = document.getElementById('addfavtokpc');
+                let favfile = document.getElementById('addfavtokpc')?.onclick?.toString();
                 if (favfile) {
-                    let fileinfo = favfile.onclick.toString().replace(/^[\S\s]+AddFavToMyCnki\(([^)]+)\)[\S\s]+$/, '$1').replace(/^[^,]+,\s+'([^']+)',\s+'([^']+)'$/, '$1-$2');
+                    let fileinfo = favfile.replace(/^[\S\s]+AddFavToMyCnki\(([^)]+)\)[\S\s]+$/, '$1').replace(/^[^,]+,\s+'([^']+)',\s+'([^']+)'$/, '$1-$2');
                     dbcode = fileinfo.replace(/^(\w+)-[\w\.]+$/, '$1');
                     filename = fileinfo.replace(/^\w+-([\w\.]+)$/, '$1');
                 }
                 break;
             } case 'wap': {
-                let downfile = document.getElementById('a_download');
-                if (downfile) {
-                    dbcode = downfile.dataset.type;
-                    filename = downfile.dataset.filename;
-                }
+                dbcode = document.getElementById('a_download')?.dataset.type;
+                filename = document.getElementById('a_download')?.dataset.filename;
                 if (!dbcode || !filename) {
                     let linkinfo = url.replace(/^https?:\/\/wap\.cnki\.net\/(touch\/web\/)?(\S+)\.htm.*$/i, '$2').replace(/^(\w+)\/\w+\/([\w\.]+)$/, '$1-$2');
                     const DBLINK = ['conference', 'dissertation', 'journal', 'newspaper', 'huiyi', 'lunwen', 'qikan', 'baozhi'];
@@ -142,7 +125,7 @@
                 }
                 break;
             } case 'wenhua': {
-                dbcode = document.getElementById('journalimg').src.replace(/^https?:\/\/[^/]+\.cnki\.net\/([^/]+)\/.+$/i, '$1');
+                dbcode = document.getElementById('journalimg')?.src?.replace(/^https?:\/\/[^/]+\.cnki\.net\/([^/]+)\/.+$/i, '$1');
                 filename = url.replace(/^https?:\/\/wh\.cnki\.net\/article\/detail\/([\w\.]+).*$/i, '$1');
                 break;
             } case 'xuewen': {
@@ -150,12 +133,8 @@
                 filename = url.replace(/^https?:\/\/xuewen\.cnki\.net\/\w+-([\w\.]+)\.htm.*$/i, '$1');
                 break;
             } case 'common': {
-                let paramdb = document.getElementById('paramdbcode');
-                let paramfile = document.getElementById('paramfilename');
-                if (paramdb && paramfile) {
-                    dbcode = paramdb.value;
-                    filename = paramfile.value;
-                }
+                dbcode = document.getElementById('paramdbcode')?.value;
+                filename = document.getElementById('paramfilename')?.value;
                 break;
             }
         }
@@ -163,11 +142,16 @@
         let fileID;
         if (dbcode && filename) {
             dbcode = dbcode.toUpperCase();
-            let oddDB = ['CDFD', 'CMFD', 'LRIJ', 'LRIN', 'LRIP', 'LRIY', 'JYSJ', 'SCGD', 'SCGI', 'SCGJ', 'SCGM', 'SCGN', 'SCGP', 'SCGY'];
-            //博士 硕士 期刊 报纸 会议 年鉴 期刊 博士 国际会议 期刊 硕士 报纸 国内会议 年鉴
+            let oddDB = ['CFND', 'LRIN', 'SCGN', 'LRIY', 'SCGY',
+                'CDFD', 'CFMD', 'CMFD', 'SCGD', 'SCGM',
+                'CFPD', 'CPFD', 'CPVD', 'IPFD', 'LRIP', 'SCGI', 'SCGP',
+                'CFJC', 'CFJD', 'CFJG', 'CFJW', 'CFJX', 'CJFQ', 'LRIJ', 'JYSJ', 'SCGJ'];
             let oddType = oddDB.indexOf(dbcode);
             if (oddType !== -1) {
-                let commDB = ['CDMD', 'CDMD', 'CJFD', 'CCND', 'CIPD', 'CYFD', 'CJFD', 'CDMD', 'CIPD', 'CJFD', 'CDMD', 'CCND', 'CIPD', 'CYFD'];
+                let commDB = ['CCND', 'CCND', 'CCND', 'CYFD', 'CYFD',
+                    'CDMD', 'CDMD', 'CDMD', 'CDMD', 'CDMD',
+                    'CIPD', 'CIPD', 'NO-CPVD', 'CIPD', 'CIPD', 'CIPD', 'CIPD',
+                    'CJFD', 'CJFD', 'CJFD', 'CJFD', 'CJFD', 'CJFD', 'CJFD', 'CJFD', 'CJFD'];
                 dbcode = commDB[oddType];
                 console.log('[CNKI-Redirect] Convert dbcode from %s to %s.', oddDB[oddType], commDB[oddType]);
             }
@@ -200,7 +184,6 @@
             }
             break;
         } case 'ideal': {
-            console.log('[CNKI-Redirect] Ideal link, no redirect.');
             let source = GM_getValue('source');
             if (source[1] !== 'clear') {
                 (source => {
@@ -226,12 +209,13 @@
                     if (!!targetArea) {
                         targetArea.appendChild(retBtnLi);
                     } else {
-                        document.getElementById('DownLoadParts').appendChild(retBtnLi);
+                        document.getElementById('DownLoadParts')?.appendChild(retBtnLi);
                     }
                     return 0;
                 })(source);
                 GM_setValue('source', ['clear', 'clear']);
             }
+            console.log('[CNKI-Redirect] Ideal link, done.');
             break;
         } case 'skip': {
             console.log('[CNKI-Redirect] Skipped.');
