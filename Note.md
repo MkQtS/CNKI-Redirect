@@ -1,4 +1,4 @@
-## CNKI 主要数据库
+## CNKI 文献数据库
 
 |dbcode|含义|
 |---|---|
@@ -8,43 +8,21 @@
 |CJFD|期刊|
 |CYFD|年鉴|
 
-## CNKI 主要数据库变体
+## CNKI 文献数据库变体
 
 部分dbcode在`oversea.cnki.net`中直接使用可能会报错，未报错的也可能不显示文献目录。
 
 暂未发现这些dbcode的优点，目前脚本会直接将其替换为通用形式。
 
-因CPVD（会议视频）类“文献”在`oversea.cnki.net`上总是报错，且不涉及CAJ、PDF格式问题，故放弃。
+|类型|子类|基础教育|法律|hypt01|hypt02|hypt03|ste|web01|web02|web03|
+|---|---|---|---|---|---|---|---|---|---|---|
+|报纸|...|CFND|CLKN|DXXN|FDCT_PHAN|GDKN|SCGN|JNGN|DJSN|HJTT_HBYN<br>LRIN|
+|硕博|CMFD 硕士<br>CDFD 博士|CFMD|CLKM 硕士<br>CLKD, CLKB 博士|DXXM 硕士<br>DXXD 博士|FDCT_PHAM 硕士<br>FDCT_PHAD 博士|GDKM 硕士<br>GDKD 博士|SCGM 硕士<br>SCGD 博士|JNGM 硕士<br>JNGD 博士|DJSM 硕士<br>DJSD 博士|HJTT_HBYM, LRIM 硕士<br>HJTT_HBYD, LRID 博士|
+|会议|CPFD 国内<br>CPVD 视频<br>IPFD 国际|CFPD|CLKP|DXXP 国内|FDCT_PHAP 国内<br>FDCT_PHAI 国际|GDKP 国内<br>GDKI 国际|SCGP 国内<br>SCGI 国际|JNGP 国内<br>JNGI 国际|DJSP 国内|HJTT_HBYP, LRIP国内<br>HJTT_HBYI, LRII 国际|
+|期刊|CJFQ|CFJD<br>CFJW 完中<br>CFJG 高中<br>CFJC 初中<br>CFJX 小学|CLKJ|DXXJ|FDCT_PHAJ|GDKJ|SCGJ|JNGJ|JYSJ<br>DJSJ|HJTT_HBYJ<br>LRIJ|
+|年鉴|...|...|...|DXXY|FDCT_PHAY|GDKY|SCGY|JNGY|...|HJTT_HBYY<br>LRIY|
 
-|dbcode|含义|
-|---|---|
-|CDFD|博士|
-|CFED|基础教育|
-|CFJC|基教期刊（初中）|
-|CFJD|基教期刊|
-|CFJG|基教期刊（高中）|
-|CFJW|基教期刊（完中）|
-|CFJX|基教期刊（小学）|
-|CFMD|基教博硕士|
-|CFND|基教报纸|
-|CFPD|基教会议|
-|CMFD|硕士|
-|CJFQ|学术期刊|
-|CPFD|国内会议|
-|CPVD|会议视频|
-|IPFD|国际会议|
-|LRIJ|期刊|
-|LRIN|报纸|
-|LRIP|会议|
-|LRIY|年鉴|
-|JYSJ|期刊|
-|SCGD|博士|
-|SCGI|国际会议|
-|SCGJ|期刊|
-|SCGM|硕士|
-|SCGN|报纸|
-|SCGP|国内会议|
-|SCGY|年鉴|
+CPVD（会议视频）在`oversea.cnki.net`上总是报错，且不涉及CAJ、PDF格式问题，故放弃。
 
 ## 来源
 
@@ -54,5 +32,10 @@
 
 > `https://ste.cnki.net/kns/brief/result.aspx?dbprefix=SCGJ`
 
-以上dbcode均来自此类搜索页面
+以上dbcode来自此类知网搜索页、文献页。
 
+> `https://web03.cnki.net/KNavi/journal/navi/LRIJ`
+
+> `https://kns.cnki.net/kns8?dbcode=CIPD`
+
+可在此类页面查看数据库介绍。

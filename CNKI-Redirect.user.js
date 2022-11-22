@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         重定向知网至海外版 — PDF、CAJ均可下载
 // @namespace    cnki_to_oversea
-// @description  将知网文献页重定向至海外版以便下载文献。支持下载硕博论文PDF，支持机构IP登录，支持知网空间、知网拾贝、知网百科、知网阅读、知网文化、手机知网等站点。
-// @version      3.3
+// @description  将知网文献页重定向至海外版以便下载文献。支持下载硕博论文PDF，支持机构IP登录，支持知网空间、知网拾贝、知网百科、知网阅读、知网文化、知网法律、手机知网等站点。
+// @version      3.4
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAB10lEQVQ4jZVSP8hpcRj+nZs6oiPkpFBkoCxnQCeT0rdQyiCZDAwYTOQsBsOR/aRshlMymsSK/JkMysDgz3KOZDmO8t/vDu79fO51b33P9r71vO/7PO+DwKIbfAuw6Ia/IQhCPB6nKEoURfgWRbfkK/l0OrXb7dlsZrPZIpHI2wU/vha322273fp8Pq/X+6+LXgij0Wi32+VyueVymc1m1+v1/zRsNhuCIFQqVSwWUyqVarV6Op1+Hs9xnCiKsOh+Emia/pyi0+mazSaE8HK59Pv9TCbjcDjy+fyL6FAohGEYwzD3+73RaJjN5mq1utlsptOpxWK5Xq/dbhd8vNq63+8ZhjEajbVabbFYGAyGRCJxPB5Pp1MwGOx0Os8Nk8mE4zipVDoYDFarVblcdjqdBEFgGIaiaKVSQRDE5XKBHpAAAHie93g85/PZbrfP53OKotLptEajsVqtrVZLJpPRNO33+w+HAwaABAAAISRJEsfxbDZbr9f1er1Go0EQJJVKDYfDXq9XKpU8Ho9cLn/aKgjCw9lAIFAoFMLh8Gw2e3T2+/2baCgUCp7no9EoSZLRaNRkMkEIWZbFcfyPv/0ijMfjh6HJZFKr1bIsi6KoRCIBfwH5brx/AseDLUJKQoGcAAAAAElFTkSuQmCC
 // @author       MkQtS
 // @license      MIT
@@ -32,6 +32,9 @@
             }, 'IDEAL': {
                 Check: /^https?:\/\/(\w+\.)?oversea\.cnki\.net\/kcms\/detail\/detail\.aspx\?dbcode=[\w]+&filename=[\w\.]+$/i,
                 Type: 'ideal'
+            }, 'LAW': {
+                Check: /^https?:\/\/lawnew\.cnki\.net\/kcms\/detail\//i,
+                Type: 'law'
             }, 'MALL': {
                 Check: /^https?:\/\/mall\.cnki\.net\/magazine\/article\//i,
                 Type: 'mall'
@@ -45,7 +48,7 @@
                 Check: /^https?:\/\/[^/]+\.cnki\.com\.cn\/article\//i,
                 Type: 'space'
             }, 'STE': {
-                Check: /^https?:\/\/(ste|web02|web03)\.cnki\.net\/kcms\/detail\//i,
+                Check: /^https?:\/\/(hypt01|hypt02|hypt03|hypt04|ste|web01|web02|web03)\.cnki\.net\/kcms\/detail\//i,
                 Type: 'ste'
             }, 'WAP': {
                 Check: /^https?:\/\/wap\.cnki\.net\/((touch\/web\/\w+\/article)|(\w+-[\w\.]+\.htm))/i,
@@ -76,7 +79,15 @@
     function GetFileID(type, url) {
         let dbcode, filename
         switch (type) {
-            case 'mall': {
+            case 'law': {
+                let snapfile = document.getElementById('SnapshotSearchButton')?.onclick?.toString();
+                if (snapfile) {
+                    let fileinfo = snapfile.replace(/^[\S\s]+StartSnapShotSearch\(([^)]+)\)[\S\s]+$/, '$1').replace(/^'([^']+)'[^']+'([^']+)'.*$/, '$1-$2');
+                    dbcode = fileinfo.replace(/^(\w+)-[\w\.]+$/, '$1');
+                    filename = fileinfo.replace(/^\w+-([\w\.]+)$/, '$1');
+                }
+                break;
+            } case 'mall': {
                 dbcode = document.getElementById('articleType')?.value;
                 filename = document.getElementById('articleFileName')?.value;
                 if (!dbcode || !filename) {
@@ -142,18 +153,22 @@
         let fileID;
         if (dbcode && filename) {
             dbcode = dbcode.toUpperCase();
-            let oddDB = ['CFND', 'LRIN', 'SCGN', 'LRIY', 'SCGY',
-                'CDFD', 'CFMD', 'CMFD', 'SCGD', 'SCGM',
-                'CFPD', 'CPFD', 'CPVD', 'IPFD', 'LRIP', 'SCGI', 'SCGP',
-                'CFJC', 'CFJD', 'CFJG', 'CFJW', 'CFJX', 'CJFQ', 'LRIJ', 'JYSJ', 'SCGJ'];
-            let oddType = oddDB.indexOf(dbcode);
-            if (oddType !== -1) {
-                let commDB = ['CCND', 'CCND', 'CCND', 'CYFD', 'CYFD',
-                    'CDMD', 'CDMD', 'CDMD', 'CDMD', 'CDMD',
-                    'CIPD', 'CIPD', 'NO-CPVD', 'CIPD', 'CIPD', 'CIPD', 'CIPD',
-                    'CJFD', 'CJFD', 'CJFD', 'CJFD', 'CJFD', 'CJFD', 'CJFD', 'CJFD', 'CJFD'];
-                dbcode = commDB[oddType];
-                console.log('[CNKI-Redirect] Convert dbcode from %s to %s.', oddDB[oddType], commDB[oddType]);
+            const cmnDB = ['CCND', 'CDMD', 'CIPD', 'CJFD', 'CYFD', 'BAD-DB'];
+            if (cmnDB.indexOf(dbcode) == -1) {
+                const oddDB = [['CFND', 'CLKN', 'DJSN', 'DXXN', 'FDCT_PHAN', 'GDKN', 'HJTT_HBYN', 'JNGN', 'LRIN', 'SCGN'],
+                ['CDFD', 'CFMD', 'CLKB', 'CLKD', 'CLKM', 'CMFD', 'DJSD', 'DJSM', 'DXXD', 'DXXM', 'FDCT_PHAD', 'FDCT_PHAM', 'GDKD', 'GDKM', 'HJTT_HBYD', 'HJTT_HBYM', 'JNGD', 'JNGM', 'LRID', 'LRIM', 'SCGD', 'SCGM'],
+                ['CFPD', 'CLKP', 'CPFD', 'DJSP', 'DXXP', 'FDCT_PHAI', 'FDCT_PHAP', 'GDKI', 'GDKP', 'HJTT_HBYI', 'HJTT_HBYP', 'IPFD', 'JNGI', 'JNGP', 'LRII', 'LRIP', 'SCGI', 'SCGP'],
+                ['CFJC', 'CFJD', 'CFJG', 'CFJW', 'CFJX', 'CJFQ', 'CLKJ', 'DJSJ', 'DXXJ', 'FDCT_PHAJ', 'GDKJ', 'HJTT_HBYJ', 'JNGJ', 'JYSJ', 'LRIJ', 'SCGJ'],
+                ['DXXY', 'FDCT_PHAY', 'GDKY', 'HJTT_HBYY', 'JNGY', 'LRIY', 'SCGY'],
+                ['CLKC', 'CPVD']];
+                for (let dbType = 0; dbType <= 5; dbType++) {
+                    let oddType = oddDB[dbType].indexOf(dbcode);
+                    if (oddType !== -1) {
+                        dbcode = cmnDB[dbType];
+                        console.log('[CNKI-Redirect] Convert dbcode from %s to %s.', oddDB[dbType][oddType], cmnDB[dbType]);
+                        break;
+                    }
+                }
             }
             filename = filename.toUpperCase();
             if (dbcode == 'CDMD') {
