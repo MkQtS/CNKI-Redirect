@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         重定向知网至海外版 — PDF、CAJ均可下载
 // @namespace    cnki_to_oversea
-// @description  将知网文献页重定向至海外版以便下载文献。支持下载硕博论文PDF，支持机构IP登录，支持知网空间、知网拾贝、知网百科、知网阅读、知网文化、知网法律、手机知网等站点。
-// @version      3.4
+// @description  将知网文献页重定向至海外版以便下载文献。支持下载硕博论文PDF，支持机构IP登录，支持知网主站、知网空间、知网拾贝、知网百科、知网阅读、知网文化、知网法律、手机知网等站点。
+// @version      3.5
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAB10lEQVQ4jZVSP8hpcRj+nZs6oiPkpFBkoCxnQCeT0rdQyiCZDAwYTOQsBsOR/aRshlMymsSK/JkMysDgz3KOZDmO8t/vDu79fO51b33P9r71vO/7PO+DwKIbfAuw6Ia/IQhCPB6nKEoURfgWRbfkK/l0OrXb7dlsZrPZIpHI2wU/vha322273fp8Pq/X+6+LXgij0Wi32+VyueVymc1m1+v1/zRsNhuCIFQqVSwWUyqVarV6Op1+Hs9xnCiKsOh+Emia/pyi0+mazSaE8HK59Pv9TCbjcDjy+fyL6FAohGEYwzD3+73RaJjN5mq1utlsptOpxWK5Xq/dbhd8vNq63+8ZhjEajbVabbFYGAyGRCJxPB5Pp1MwGOx0Os8Nk8mE4zipVDoYDFarVblcdjqdBEFgGIaiaKVSQRDE5XKBHpAAAHie93g85/PZbrfP53OKotLptEajsVqtrVZLJpPRNO33+w+HAwaABAAAISRJEsfxbDZbr9f1er1Go0EQJJVKDYfDXq9XKpU8Ho9cLn/aKgjCw9lAIFAoFMLh8Gw2e3T2+/2baCgUCp7no9EoSZLRaNRkMkEIWZbFcfyPv/0ijMfjh6HJZFKr1bIsi6KoRCIBfwH5brx/AseDLUJKQoGcAAAAAElFTkSuQmCC
 // @author       MkQtS
 // @license      MIT
@@ -47,9 +47,6 @@
             }, 'SPACE': {
                 Check: /^https?:\/\/[^/]+\.cnki\.com\.cn\/article\//i,
                 Type: 'space'
-            }, 'STE': {
-                Check: /^https?:\/\/(hypt01|hypt02|hypt03|hypt04|ste|web01|web02|web03)\.cnki\.net\/kcms\/detail\//i,
-                Type: 'ste'
             }, 'WAP': {
                 Check: /^https?:\/\/wap\.cnki\.net\/((touch\/web\/\w+\/article)|(\w+-[\w\.]+\.htm))/i,
                 Type: 'wap'
@@ -116,14 +113,6 @@
                 dbcode = linkinfo.replace(/^(\w+)-[\w\.]+@\w+$/i, '$1');
                 filename = linkinfo.replace(/^\w+-([\w\.]+)@\w+$/i, '$1');
                 break;
-            } case 'ste': {
-                let favfile = document.getElementById('addfavtokpc')?.onclick?.toString();
-                if (favfile) {
-                    let fileinfo = favfile.replace(/^[\S\s]+AddFavToMyCnki\(([^)]+)\)[\S\s]+$/, '$1').replace(/^[^,]+,\s+'([^']+)',\s+'([^']+)'$/, '$1-$2');
-                    dbcode = fileinfo.replace(/^(\w+)-[\w\.]+$/, '$1');
-                    filename = fileinfo.replace(/^\w+-([\w\.]+)$/, '$1');
-                }
-                break;
             } case 'wap': {
                 dbcode = document.getElementById('a_download')?.dataset.type;
                 filename = document.getElementById('a_download')?.dataset.filename;
@@ -146,6 +135,14 @@
             } case 'common': {
                 dbcode = document.getElementById('paramdbcode')?.value;
                 filename = document.getElementById('paramfilename')?.value;
+                if (!dbcode || !filename) {
+                    let favfile = document.getElementById('addfavtokpc')?.onclick?.toString();
+                    if (favfile) {
+                        let fileinfo = favfile.replace(/^[\S\s]+AddFavToMyCnki\(([^)]+)\)[\S\s]+$/, '$1').replace(/^[^,]+,\s+'([^']+)',\s+'([^']+)'$/, '$1-$2');
+                        dbcode = fileinfo.replace(/^(\w+)-[\w\.]+$/, '$1');
+                        filename = fileinfo.replace(/^\w+-([\w\.]+)$/, '$1');
+                    }
+                }
                 break;
             }
         }
@@ -153,22 +150,20 @@
         let fileID;
         if (dbcode && filename) {
             dbcode = dbcode.toUpperCase();
+            let dbcodeIn = dbcode;
             const cmnDB = ['CCND', 'CDMD', 'CIPD', 'CJFD', 'CYFD', 'BAD-DB'];
-            if (cmnDB.indexOf(dbcode) == -1) {
-                const oddDB = [['CFND', 'CLKN', 'DJSN', 'DXXN', 'FDCT_PHAN', 'GDKN', 'HJTT_HBYN', 'JNGN', 'LRIN', 'SCGN'],
-                ['CDFD', 'CFMD', 'CLKB', 'CLKD', 'CLKM', 'CMFD', 'DJSD', 'DJSM', 'DXXD', 'DXXM', 'FDCT_PHAD', 'FDCT_PHAM', 'GDKD', 'GDKM', 'HJTT_HBYD', 'HJTT_HBYM', 'JNGD', 'JNGM', 'LRID', 'LRIM', 'SCGD', 'SCGM'],
-                ['CFPD', 'CLKP', 'CPFD', 'DJSP', 'DXXP', 'FDCT_PHAI', 'FDCT_PHAP', 'GDKI', 'GDKP', 'HJTT_HBYI', 'HJTT_HBYP', 'IPFD', 'JNGI', 'JNGP', 'LRII', 'LRIP', 'SCGI', 'SCGP'],
-                ['CFJC', 'CFJD', 'CFJG', 'CFJW', 'CFJX', 'CJFQ', 'CLKJ', 'DJSJ', 'DXXJ', 'FDCT_PHAJ', 'GDKJ', 'HJTT_HBYJ', 'JNGJ', 'JYSJ', 'LRIJ', 'SCGJ'],
-                ['DXXY', 'FDCT_PHAY', 'GDKY', 'HJTT_HBYY', 'JNGY', 'LRIY', 'SCGY'],
-                ['CLKC', 'CPVD']];
-                for (let dbType = 0; dbType <= 5; dbType++) {
-                    let oddType = oddDB[dbType].indexOf(dbcode);
-                    if (oddType !== -1) {
-                        dbcode = cmnDB[dbType];
-                        console.log('[CNKI-Redirect] Convert dbcode from %s to %s.', oddDB[dbType][oddType], cmnDB[dbType]);
-                        break;
-                    }
+            if (cmnDB.indexOf(dbcodeIn) == -1) {
+                const oddDB = ['CLKB', 'CLKC', 'CPVD', 'IPFD'];
+                if (oddDB.indexOf(dbcodeIn) !== -1) {
+                    const odd2cmn = ['CDMD', 'BAD-DB', 'BAD-DB', 'CIPD'];
+                    dbcode = odd2cmn[oddDB.indexOf(dbcodeIn)];
+                } else {
+                    let dbkey = dbcodeIn.replace(/^C(\w)F\w+$/, '$1').replace(/^CF(\w)\w+$/, '$1').replace(/^\w+(\w)$/, '$1');
+                    const dbkeys = ['D', 'I', 'J', 'M', 'N', 'P', 'Y'];
+                    const key2cmn = ['CDMD', 'CIPD', 'CJFD', 'CDMD', 'CCND', 'CIPD', 'CYFD'];
+                    dbcode = key2cmn[dbkeys.indexOf(dbkey)];
                 }
+                console.log('[CNKI-Redirect] Convert dbcode from %s to %s.', dbcodeIn, dbcode);
             }
             filename = filename.toUpperCase();
             if (dbcode == 'CDMD') {
@@ -193,7 +188,7 @@
             if (source[1] !== 'clear') {
                 GM_setValue('banRedirect', source[0]);
                 console.log('[CNKI-Redirect] Error! Go back to previous page...');
-                window.location.href = source[1];
+                window.location.replace(source[1]);
             } else {
                 console.log('[CNKI-Redirect] Previous page not found, stay here.');
             }
@@ -246,7 +241,7 @@
                 } else {
                     window.stop();
                     GM_setValue('source', [fileID, currentUrl]);
-                    window.location.href = targetSite + fileID;
+                    window.location.replace(targetSite + fileID);
                 }
             } else {
                 console.log('[CNKI-Redirect] No proper file ID found.');
