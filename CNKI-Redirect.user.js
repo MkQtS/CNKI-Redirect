@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         重定向知网至海外版 — PDF、CAJ均可下载
 // @namespace    cnki_to_oversea
-// @description  将知网文献页重定向至海外版以便下载文献。支持下载硕博论文PDF，支持机构IP登录，支持知网主站、知网空间、知网拾贝、知网百科、知网阅读、知网文化、知网法律、手机知网等站点。
-// @version      3.5
+// @description  将知网文献页重定向至海外版以便下载文献。支持下载硕博论文PDF，支持机构IP登录，支持知网主站、知网空间、知网编客、知网拾贝、知网百科、知网阅读、知网文化、知网法律、手机知网等站点。
+// @version      3.6
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAB10lEQVQ4jZVSP8hpcRj+nZs6oiPkpFBkoCxnQCeT0rdQyiCZDAwYTOQsBsOR/aRshlMymsSK/JkMysDgz3KOZDmO8t/vDu79fO51b33P9r71vO/7PO+DwKIbfAuw6Ia/IQhCPB6nKEoURfgWRbfkK/l0OrXb7dlsZrPZIpHI2wU/vha322273fp8Pq/X+6+LXgij0Wi32+VyueVymc1m1+v1/zRsNhuCIFQqVSwWUyqVarV6Op1+Hs9xnCiKsOh+Emia/pyi0+mazSaE8HK59Pv9TCbjcDjy+fyL6FAohGEYwzD3+73RaJjN5mq1utlsptOpxWK5Xq/dbhd8vNq63+8ZhjEajbVabbFYGAyGRCJxPB5Pp1MwGOx0Os8Nk8mE4zipVDoYDFarVblcdjqdBEFgGIaiaKVSQRDE5XKBHpAAAHie93g85/PZbrfP53OKotLptEajsVqtrVZLJpPRNO33+w+HAwaABAAAISRJEsfxbDZbr9f1er1Go0EQJJVKDYfDXq9XKpU8Ho9cLn/aKgjCw9lAIFAoFMLh8Gw2e3T2+/2baCgUCp7no9EoSZLRaNRkMkEIWZbFcfyPv/0ijMfjh6HJZFKr1bIsi6KoRCIBfwH5brx/AseDLUJKQoGcAAAAAElFTkSuQmCC
 // @author       MkQtS
 // @license      MIT
@@ -12,6 +12,7 @@
 // @match        *://*.cnki.net/*
 // @match        *://*.cnki.com.cn/*
 // @exclude      *://*.cnki.net/kcms/detail/frame/list.aspx*
+// @exclude      *://*.cnki.net/kcms/detail/knetsearch.aspx*
 // @exclude      *://*.cnki.net/kcms2/video/*
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -32,9 +33,9 @@
             }, 'IDEAL': {
                 Check: /^https?:\/\/(\w+\.)?oversea\.cnki\.net\/kcms\/detail\/detail\.aspx\?dbcode=[\w]+&filename=[\w\.]+$/i,
                 Type: 'ideal'
-            }, 'LAW': {
-                Check: /^https?:\/\/lawnew\.cnki\.net\/kcms\/detail\//i,
-                Type: 'law'
+            }, 'BIANKE': {
+                Check: /^https?:\/\/bianke\.cnki\.net\/web\/article\//i,
+                Type: 'bianke'
             }, 'MALL': {
                 Check: /^https?:\/\/mall\.cnki\.net\/magazine\/article\//i,
                 Type: 'mall'
@@ -76,10 +77,10 @@
     function GetFileID(type, url) {
         let dbcode, filename
         switch (type) {
-            case 'law': {
-                let snapfile = document.getElementById('SnapshotSearchButton')?.onclick?.toString();
-                if (snapfile) {
-                    let fileinfo = snapfile.replace(/^[\S\s]+StartSnapShotSearch\(([^)]+)\)[\S\s]+$/, '$1').replace(/^'([^']+)'[^']+'([^']+)'.*$/, '$1-$2');
+            case 'bianke': {
+                let downlink = document.querySelector('.abstract.clearfix > .wrap > .aBtn')?.href;
+                if (downlink) {
+                    let fileinfo = downlink.replace(/^https?:\/\/bianke\.cnki\.net\/z\/download\/article\/([\w\.]+)\/(\w+)\/.+$/i, '$2-$1');
                     dbcode = fileinfo.replace(/^(\w+)-[\w\.]+$/, '$1');
                     filename = fileinfo.replace(/^\w+-([\w\.]+)$/, '$1');
                 }
@@ -110,8 +111,8 @@
                 break;
             } case 'space': {
                 let linkinfo = url.replace(/^https?:\/\/(\w+)\.cnki\.com\.cn\/article\/([\w\.-]+)\.htm.*$/i, '$2@$1').replace(/^(\w+)(-\d+-)|(total-)/i, '$1-').replace(/^([\w\.]+)@(\w+)$/, '$2-$1@$2');
-                dbcode = linkinfo.replace(/^(\w+)-[\w\.]+@\w+$/i, '$1');
-                filename = linkinfo.replace(/^\w+-([\w\.]+)@\w+$/i, '$1');
+                dbcode = linkinfo.replace(/^(\w+)-[\w\.]+@\w+$/, '$1');
+                filename = linkinfo.replace(/^\w+-([\w\.]+)@\w+$/, '$1');
                 break;
             } case 'wap': {
                 dbcode = document.getElementById('a_download')?.dataset.type;
@@ -141,6 +142,13 @@
                         let fileinfo = favfile.replace(/^[\S\s]+AddFavToMyCnki\(([^)]+)\)[\S\s]+$/, '$1').replace(/^[^,]+,\s+'([^']+)',\s+'([^']+)'$/, '$1-$2');
                         dbcode = fileinfo.replace(/^(\w+)-[\w\.]+$/, '$1');
                         filename = fileinfo.replace(/^\w+-([\w\.]+)$/, '$1');
+                    } else {
+                        let snapfile = document.getElementById('SnapshotSearchButton')?.onclick?.toString();
+                        if (snapfile) {
+                            let fileinfo = snapfile.replace(/^[\S\s]+StartSnapShotSearch\(([^)]+)\)[\S\s]+$/, '$1').replace(/^'([^']+)'[^']+'([^']+)'.*$/, '$1-$2');
+                            dbcode = fileinfo.replace(/^(\w+)-[\w\.]+$/, '$1');
+                            filename = fileinfo.replace(/^\w+-([\w\.]+)$/, '$1');
+                        }
                     }
                 }
                 break;
@@ -149,19 +157,19 @@
 
         let fileID;
         if (dbcode && filename) {
-            dbcode = dbcode.toUpperCase();
-            let dbcodeIn = dbcode;
+            let dbcodeIn = dbcode.toUpperCase();
+            dbcode = dbcodeIn.replace(/^[A-Z]+_([A-Z]+)$/, '$1');
             const cmnDB = ['CCND', 'CDMD', 'CIPD', 'CJFD', 'CYFD', 'BAD-DB'];
-            if (cmnDB.indexOf(dbcodeIn) == -1) {
-                const oddDB = ['CLKB', 'CLKC', 'CPVD', 'IPFD'];
-                if (oddDB.indexOf(dbcodeIn) !== -1) {
-                    const odd2cmn = ['CDMD', 'BAD-DB', 'BAD-DB', 'CIPD'];
-                    dbcode = odd2cmn[oddDB.indexOf(dbcodeIn)];
+            if (cmnDB.indexOf(dbcode) == -1) {
+                const oddDB = ['BNJK', 'CACM', 'CLKB', 'CLKC', 'CPVD', 'IPFD'];
+                if (oddDB.indexOf(dbcode) !== -1) {
+                    const odd2cmn = ['CJFD', 'CJFD', 'CDMD', 'BAD-DB', 'BAD-DB', 'CIPD'];
+                    dbcode = odd2cmn[oddDB.indexOf(dbcode)];
                 } else {
-                    let dbkey = dbcodeIn.replace(/^C(\w)F\w+$/, '$1').replace(/^CF(\w)\w+$/, '$1').replace(/^\w+(\w)$/, '$1');
+                    let dbkey = dbcode.replace(/^C(\w)F\w+$/, '$1').replace(/^CF(\w)\w+$/, '$1').replace(/^\w+(\w)$/, '$1');
                     const dbkeys = ['D', 'I', 'J', 'M', 'N', 'P', 'Y'];
                     const key2cmn = ['CDMD', 'CIPD', 'CJFD', 'CDMD', 'CCND', 'CIPD', 'CYFD'];
-                    dbcode = key2cmn[dbkeys.indexOf(dbkey)];
+                    dbcode = key2cmn[dbkeys.indexOf(dbkey)] || dbcodeIn;
                 }
                 console.log('[CNKI-Redirect] Convert dbcode from %s to %s.', dbcodeIn, dbcode);
             }
