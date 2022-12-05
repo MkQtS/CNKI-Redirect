@@ -2,12 +2,13 @@
 // @name         重定向知网至海外版 — PDF、CAJ均可下载
 // @namespace    cnki_to_oversea
 // @description  将知网文献页重定向至海外版以便下载文献。支持下载硕博论文PDF，支持机构IP登录，支持知网主站、知网空间、知网编客、知网拾贝、知网百科、知网阅读、知网文化、知网法律、手机知网等站点。
-// @version      3.6
+// @version      3.7
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAB10lEQVQ4jZVSP8hpcRj+nZs6oiPkpFBkoCxnQCeT0rdQyiCZDAwYTOQsBsOR/aRshlMymsSK/JkMysDgz3KOZDmO8t/vDu79fO51b33P9r71vO/7PO+DwKIbfAuw6Ia/IQhCPB6nKEoURfgWRbfkK/l0OrXb7dlsZrPZIpHI2wU/vha322273fp8Pq/X+6+LXgij0Wi32+VyueVymc1m1+v1/zRsNhuCIFQqVSwWUyqVarV6Op1+Hs9xnCiKsOh+Emia/pyi0+mazSaE8HK59Pv9TCbjcDjy+fyL6FAohGEYwzD3+73RaJjN5mq1utlsptOpxWK5Xq/dbhd8vNq63+8ZhjEajbVabbFYGAyGRCJxPB5Pp1MwGOx0Os8Nk8mE4zipVDoYDFarVblcdjqdBEFgGIaiaKVSQRDE5XKBHpAAAHie93g85/PZbrfP53OKotLptEajsVqtrVZLJpPRNO33+w+HAwaABAAAISRJEsfxbDZbr9f1er1Go0EQJJVKDYfDXq9XKpU8Ho9cLn/aKgjCw9lAIFAoFMLh8Gw2e3T2+/2baCgUCp7no9EoSZLRaNRkMkEIWZbFcfyPv/0ijMfjh6HJZFKr1bIsi6KoRCIBfwH5brx/AseDLUJKQoGcAAAAAElFTkSuQmCC
 // @author       MkQtS
 // @license      MIT
 // @homepage     https://github.com/MkQtS/CNKI-Redirect
 // @supportURL   https://github.com/MkQtS/CNKI-Redirect/issues
+// @run-at       document-end
 // @match        *://cnki.net/*
 // @match        *://*.cnki.net/*
 // @match        *://*.cnki.com.cn/*
@@ -58,7 +59,7 @@
                 Check: /^https?:\/\/xuewen\.cnki\.net\/\w+-[\w\.]+\.htm/i,
                 Type: 'xuewen'
             }, 'COMMON': {
-                Check: /^https?:\/\/([\w\.]+)?cnki\.net\/kcms\d*\/(article|detail)\//i,
+                Check: /^https?:\/\/([\w\.]+)?cnki\.net\/kcms\d*\/(article|detail|doi)\//i,
                 Type: 'common'
             },
         };
@@ -159,7 +160,7 @@
         if (dbcode && filename) {
             let dbcodeIn = dbcode.toUpperCase();
             dbcode = dbcodeIn.replace(/^[A-Z]+_([A-Z]+)$/, '$1');
-            const cmnDB = ['CCND', 'CDMD', 'CIPD', 'CJFD', 'CYFD', 'BAD-DB'];
+            const cmnDB = ['CCJD', 'CCND', 'CDMD', 'CIPD', 'CJFD', 'CYFD', 'BAD-DB'];
             if (cmnDB.indexOf(dbcode) == -1) {
                 const oddDB = ['BNJK', 'CACM', 'CLKB', 'CLKC', 'CPVD', 'IPFD'];
                 if (oddDB.indexOf(dbcode) !== -1) {
