@@ -32,7 +32,7 @@
 ```javascript
 let dbcodeIn = dbcode.toUpperCase();
 dbcode = dbcodeIn.replace(/^[A-Z]+_([A-Z]+)$/, '$1');
-const cmnDB = ['CCJD', 'CCND', 'CDMD', 'CIPD', 'CJFD', 'CYFD', 'BAD-DB'];
+const cmnDB = ['CCJD', 'CCND', 'CDMD', 'CIPD', 'CJFD', 'CYFD'];
 if (cmnDB.indexOf(dbcode) == -1) {
     const oddDB = ['BNJK', 'CACM', 'CLKB', 'CLKC', 'CPVD', 'IPFD'];
     if (oddDB.indexOf(dbcode) !== -1) {
