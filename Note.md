@@ -6,6 +6,7 @@
 |子类|...|...|CMFD 硕士<br>CDFD 博士|CPFD 国内<br>CPVD 视频<br>IPFD 国际|CJFQ|...|
 |基础教育|...|CFND|CFMD|CFPD|CFJD<br>CFJW 完中<br>CFJG 高中<br>CFJC 初中<br>CFJX 小学|...|
 |法律|...|CLKN|CLKM 硕士<br>CLKD, CLKB 博士|CLKP|CLKJ|...|
+|chkdx|...|CHKJ|CDMH|CHKP|CHKJ|BSFD|
 |ds|...|ZKZN|ZKZM 硕士<br>ZKZD 博士|ZKZP 国内<br>ZKZI 国际|ZKZJ|ZKZY|
 |hypt01|...|DXXN|DXXM 硕士<br>DXXD 博士|DXXP 国内|DXXJ|DXXY|
 |hypt02|...|WKDN<br>FDCT_PHAN|WKDM, FDCT_PHAM 硕士<br>WKDD, FDCT_PHAD 博士|WKDP, FDCT_PHAP 国内<br>WKDI, FDCT_PHAI 国际|WKDJ<br>FDCT_PHAJ|WKDY<br>FDCT_PHAY|
@@ -22,22 +23,41 @@
 
 部分dbcode在`oversea.cnki.net`中直接使用可能会报错，未报错的也可能不显示文献目录。暂未发现非目标dbcode的优点，目前脚本会直接将其转换为目标形式。
 
-### 放弃的类型
+CCJD(辑刊)在非文献知网节(如`kns.cnki.net`, `oversea.cnki.net`, `www.cnki.net`)站点可能会使用CJFD(期刊)，但文献知网节站点只能使用CCJD。
 
-- CPVD（会议视频）在`oversea.cnki.net`上总是报错，且不涉及CAJ、PDF格式问题
-- CLKC（案例）不属于此脚本目标类型（在`oversea.cnki.net`上也会报错）
+### 主动放弃的类型
 
-## 脚本中的处理方法
+|dbcode|属性|
+|---|---|
+|CCVD|教学视频|
+|CISD|标准|
+|CLKC|案例|
+|CPVD|会议视频|
+|SCEF|企业标准|
+|SCHF|行业标准|
+|SCOD|专利|
+|SCPD|中国专利|
+|SCSF|国家标准|
+|SMSD|标准题录|
+|SNAD|成果|
+|SOPD|海外专利|
+|...|...|
+
+## 脚本中对dbcode的处理
 
 ```javascript
 let dbcodeIn = dbcode.toUpperCase();
 dbcode = dbcodeIn.replace(/^[A-Z]+_([A-Z]+)$/, '$1');
 const cmnDB = ['CCJD', 'CCND', 'CDMD', 'CIPD', 'CJFD', 'CYFD'];
 if (cmnDB.indexOf(dbcode) == -1) {
-    const oddDB = ['BNJK', 'CACM', 'CLKB', 'CLKC', 'CPVD', 'IPFD'];
+    const oddDB = ['BNJK', 'BSFD', 'CACM', 'CDMH', 'CLKB', 'IPFD'];
+    const badDB = ['CCVD', 'CISD', 'CLKC', 'CPVD', 'SCEF', 'SCHF', 'SCOD', 'SCPD', 'SCSF', 'SMSD', 'SNAD', 'SOPD'];
     if (oddDB.indexOf(dbcode) !== -1) {
-        const odd2cmn = ['CJFD', 'CJFD', 'CDMD', 'BAD-DB', 'BAD-DB', 'CIPD'];
+        const odd2cmn = ['CJFD', 'CYFD', 'CJFD', 'CDMD', 'CDMD', 'CIPD'];
         dbcode = odd2cmn[oddDB.indexOf(dbcode)];
+    } else if (badDB.indexOf(dbcode) !== -1) {
+        dbcode = 'BAD-' + dbcode;
+        console.log('[CNKI-Redirect] %s is out of our scope.', dbcodeIn);
     } else {
         let dbkey = dbcode.replace(/^C(\w)F\w+$/, '$1').replace(/^CF(\w)\w+$/, '$1').replace(/^\w+(\w)$/, '$1');
         const dbkeys = ['D', 'I', 'J', 'M', 'N', 'P', 'Y'];//博士 国际会议 期刊 硕士 报纸 国内会议 年鉴

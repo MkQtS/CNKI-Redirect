@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         重定向知网至海外版 — PDF、CAJ均可下载
 // @namespace    cnki_to_oversea
-// @description  将知网文献页重定向至海外版以便下载文献。支持下载硕博论文PDF，支持机构IP登录，支持知网主站、知网空间、知网编客、知网拾贝、知网百科、知网阅读、知网文化、知网法律、手机知网等站点。
-// @version      3.8
+// @description  将知网文献页重定向至海外版以便下载文献。支持下载硕博论文PDF，支持机构IP登录，支持知网主站、知网空间、知网编客、知网拾贝、知网百科、知网阅读、知网文化、知网法律、知网医院数字图书馆、手机知网等站点。
+// @version      3.9
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAB10lEQVQ4jZVSP8hpcRj+nZs6oiPkpFBkoCxnQCeT0rdQyiCZDAwYTOQsBsOR/aRshlMymsSK/JkMysDgz3KOZDmO8t/vDu79fO51b33P9r71vO/7PO+DwKIbfAuw6Ia/IQhCPB6nKEoURfgWRbfkK/l0OrXb7dlsZrPZIpHI2wU/vha322273fp8Pq/X+6+LXgij0Wi32+VyueVymc1m1+v1/zRsNhuCIFQqVSwWUyqVarV6Op1+Hs9xnCiKsOh+Emia/pyi0+mazSaE8HK59Pv9TCbjcDjy+fyL6FAohGEYwzD3+73RaJjN5mq1utlsptOpxWK5Xq/dbhd8vNq63+8ZhjEajbVabbFYGAyGRCJxPB5Pp1MwGOx0Os8Nk8mE4zipVDoYDFarVblcdjqdBEFgGIaiaKVSQRDE5XKBHpAAAHie93g85/PZbrfP53OKotLptEajsVqtrVZLJpPRNO33+w+HAwaABAAAISRJEsfxbDZbr9f1er1Go0EQJJVKDYfDXq9XKpU8Ho9cLn/aKgjCw9lAIFAoFMLh8Gw2e3T2+/2baCgUCp7no9EoSZLRaNRkMkEIWZbFcfyPv/0ijMfjh6HJZFKr1bIsi6KoRCIBfwH5brx/AseDLUJKQoGcAAAAAElFTkSuQmCC
 // @author       MkQtS
 // @license      MIT
@@ -113,7 +113,7 @@
                 dbcode = document.getElementById('a_download')?.dataset.type;
                 filename = document.getElementById('a_download')?.dataset.filename;
                 if (!dbcode || !filename) {
-                    let fileinfo = url.replace(/^https?:\/\/\w+\.cnki\.net\/(touch\/)?(web\/)?(\S+)\.htm.*$/, '$3').replace(/^(\w+)\/article\/(\w+-)?([\w\.]+)$/, '$1-$3');
+                    let fileinfo = url.replace(/^https?:\/\/\w+\.cnki\.net\/(touch\/)?(web\/)?(\S+)\.htm.*$/, '$3').replace(/^(\w+)\/article\/(\w*-)?([\w\.]+)$/, '$1-$3');
                     const DBLINK = ['conference', 'dissertation', 'journal', 'newspaper', 'huiyi', 'lunwen', 'qikan', 'baozhi'];
                     const DBREAL = ['CIPD', 'CDMD', 'CJFD', 'CCND', 'CIPD', 'CDMD', 'CJFD', 'CCND'];
                     dbcode = DBREAL[DBLINK.indexOf(fileinfo.replace(/^(\w+)-[\w\.]+$/, '$1'))];
@@ -143,6 +143,10 @@
                             let fileinfo = snapfile.replace(/^[\S\s]+StartSnapShotSearch\(([^)]+)\)[\S\s]+$/, '$1').replace(/^'([^']+)'[^']+'([^']+)'.*$/, '$1-$2');
                             dbcode = fileinfo.replace(/^(\w+)-[\w\.]+$/, '$1');
                             filename = fileinfo.replace(/^\w+-([\w\.]+)$/, '$1');
+                        } else {
+                            let urlParams = new URLSearchParams(url.split('?')[1]);
+                            dbcode = urlParams.get('dbcode');
+                            filename = urlParams.get('filename');
                         }
                     }
                 }
@@ -156,10 +160,14 @@
             dbcode = dbcodeIn.replace(/^[A-Z]+_([A-Z]+)$/, '$1');
             const cmnDB = ['CCJD', 'CCND', 'CDMD', 'CIPD', 'CJFD', 'CYFD'];
             if (cmnDB.indexOf(dbcode) == -1) {
-                const oddDB = ['BNJK', 'CACM', 'CLKB', 'CLKC', 'CPVD', 'IPFD'];
+                const oddDB = ['BNJK', 'BSFD', 'CACM', 'CDMH', 'CLKB', 'IPFD'];
+                const badDB = ['CCVD', 'CISD', 'CLKC', 'CPVD', 'SCEF', 'SCHF', 'SCOD', 'SCPD', 'SCSF', 'SMSD', 'SNAD', 'SOPD'];
                 if (oddDB.indexOf(dbcode) !== -1) {
-                    const odd2cmn = ['CJFD', 'CJFD', 'CDMD', 'BAD-DB', 'BAD-DB', 'CIPD'];
+                    const odd2cmn = ['CJFD', 'CYFD', 'CJFD', 'CDMD', 'CDMD', 'CIPD'];
                     dbcode = odd2cmn[oddDB.indexOf(dbcode)];
+                } else if (badDB.indexOf(dbcode) !== -1) {
+                    dbcode = dbcode + '-BAD';
+                    console.log('[CNKI-Redirect] %s is out of our scope.', dbcodeIn);
                 } else {
                     let dbkey = dbcode.replace(/^C(\w)F\w+$/, '$1').replace(/^CF(\w)\w+$/, '$1').replace(/^\w+(\w)$/, '$1');
                     const dbkeys = ['D', 'I', 'J', 'M', 'N', 'P', 'Y'];
@@ -172,11 +180,11 @@
             if (dbcode == 'CDMD') {
                 filename = filename.replace(/^([\w\.]+)$/, '$1.NH').replace(/^([\w\.]+?)(\.NH)+$/, '$1.nh');
             }
-            fileID = 'dbcode=' + dbcode + '&filename=' + filename;
-            let fileID_Check = /^dbcode=\w+&filename=[\w\.]+$/;
-            if (!fileID_Check.test(fileID)) {
-                console.log('[CNKI-Redirect] Invalid fileID: ' + fileID);
-                fileID = undefined;
+            if (/^\w+$/.test(dbcode) && /^[\w\.]+$/.test(filename)) {
+                console.log('[CNKI-Redirect] Got file ID: dbcode=%s&filename=%s', dbcode, filename);
+                fileID = [dbcode, filename];
+            } else {
+                console.log('[CNKI-Redirect] Invalid file ID: dbcode=%s&filename=%s', dbcode, filename);
             }
         }
         return fileID;
@@ -184,38 +192,48 @@
 
     let currentUrl = window.location.href;
     let situation = GetSituation(currentUrl.toLowerCase());
-
     switch (situation) {
         case 'error': {
             let source = GM_getValue('source');
-            if (source[1] !== 'clear') {
-                GM_setValue('banRedirect', source[0]);
-                console.log('[CNKI-Redirect] Error! Go back to previous page...');
-                window.location.replace(source[1]);
-            } else {
+            if (source[0] == 'clear') {
                 console.log('[CNKI-Redirect] Previous page not found, stay here.');
+            } else {
+                if (source[1] == 'CJFD') {
+                    console.log('[CNKI-Redirect] CJFD failed, try CCJD...');
+                    GM_setValue('source', [source[0], 'CJFD->CCJD', source[2]]);
+                    window.location.replace(targetSite + 'dbcode=CCJD&filename=' + source[2]);
+                } else if (source[1] == 'CJFD->CCJD') {
+                    console.log('[CNKI-Redirect] Both CJFD and CCJD failed. Go back to previous page...');
+                    GM_setValue('banRedirect', ['CJFD', source[2]]);
+                    window.location.replace(source[0]);
+                } else {
+                    console.log('[CNKI-Redirect] Error! Go back to previous page...');
+                    GM_setValue('banRedirect', [source[1], source[2]]);
+                    window.location.replace(source[0]);
+                }
             }
             break;
         } case 'ideal': {
             let source = GM_getValue('source');
-            if (source[1] !== 'clear') {
+            if (source[0] !== 'clear') {
                 (source => {
                     const BTNTEXT = {
                         'oversea.cnki.net': '🙃 Open original',
                         'chn.oversea.cnki.net': '🙃 打开源页面',
                         'tra.oversea.cnki.net': '🙃 打開源頁面',
                     }
-                    const srcBtn = `<li class='btn-go2src' style='background-color: rgb(238, 119, 85); color: rgb(255, 255, 255); text-align: center; border: none; border-radius: 4px;'><a id='go2src' title='${source[1]}'>${BTNTEXT[window.location.host]}</a></li>`;
+                    const srcBtn = `<li class='btn-go2src' style='background-color: rgb(238, 119, 85); color: rgb(255, 255, 255); text-align: center; border: none; border-radius: 4px;'><a id='go2src' title='${source[0]}'>${BTNTEXT[window.location.host]}</a></li>`;
                     let targetArea = document.getElementById('DownLoadParts').querySelector('.operate-btn') || document.getElementById('DownLoadParts').querySelector('.operate-left');
                     targetArea?.insertAdjacentHTML('beforeend', srcBtn);
+                    let banID = [source[1].replace(/^(\w+)->\w+$/, '$1'), source[2]];
                     document.getElementById('go2src')?.addEventListener('click', () => {
-                        GM_setValue('banRedirect', source[0]);
+                        GM_setValue('banRedirect', [banID[0], banID[1]]);
                         console.log('[CNKI-Redirect] Open original page...');
-                        window.open(source[1], '_blank');
+                        window.open(source[0], '_blank');
                     });
                     return 0;
                 })(source);
-                GM_setValue('source', ['clear', 'clear']);
+                GM_setValue('source', ['clear', 'clear', 'clear']);
             }
             console.log('[CNKI-Redirect] Ideal link, done.');
             break;
@@ -225,15 +243,14 @@
         } default: {
             let fileID = GetFileID(situation, currentUrl.toLowerCase());
             if (fileID) {
-                console.log('[CNKI-Redirect] Got file ID: ' + fileID);
                 let banCheck = GM_getValue('banRedirect');
-                if (fileID == banCheck) {
-                    GM_setValue('banRedirect', 'clear');
+                if (fileID.toString() == banCheck.toString()) {
+                    GM_setValue('banRedirect', ['clear', 'clear']);
                     console.log('[CNKI-Redirect] Redirect for this file is not allowed. Refresh to try again.');
                 } else {
                     window.stop();
-                    GM_setValue('source', [fileID, currentUrl]);
-                    window.location.replace(targetSite + fileID);
+                    GM_setValue('source', [currentUrl, fileID[0], fileID[1]]);
+                    window.location.replace(targetSite + 'dbcode=' + fileID[0] + '&filename=' + fileID[1]);
                 }
             } else {
                 console.log('[CNKI-Redirect] No proper file ID found.');
