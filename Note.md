@@ -19,13 +19,11 @@
 |web03|...|LRIN<br>HJTT_HBYN|LRIM, HJTT_HBYM 硕士<br>LRID, HJTT_HBYD 博士|LRIP, HJTT_HBYP 国内<br>LRII, HJTT_HBYI 国际|LRIJ<br>HJTT_HBYJ|LRIY<br>HJTT_HBYY|
 |...|...|...|...|...|...|...|
 
-以上dbcode来自相关知网文献页、搜索页。
-
-部分dbcode在`oversea.cnki.net`中直接使用可能会报错，未报错的也可能不显示文献目录。暂未发现非目标dbcode的优点，目前脚本会直接将其转换为目标形式。
+以上dbcode来自相关知网文献页、搜索页。部分dbcode在`oversea.cnki.net`中直接使用可能会报错，未报错的也可能不显示文献目录。暂未发现非目标dbcode的优点，目前脚本会直接将其转换为目标形式。
 
 CCJD(辑刊)在非文献知网节(如`kns.cnki.net`, `oversea.cnki.net`, `www.cnki.net`)站点可能会使用CJFD(期刊)，但文献知网节站点只能使用CCJD。
 
-### 主动放弃的类型
+### 不支持的类型
 
 |dbcode|属性|
 |---|---|
@@ -46,25 +44,24 @@ CCJD(辑刊)在非文献知网节(如`kns.cnki.net`, `oversea.cnki.net`, `www.cn
 ## 脚本中对dbcode的处理
 
 ```javascript
-let dbcodeIn = dbcode.toUpperCase();
-dbcode = dbcodeIn.replace(/^[A-Z]+_([A-Z]+)$/, '$1');
+rawFileID = [dbcode.toUpperCase(), filename.toUpperCase()];
+dbcode = rawFileID[0].replace(/^[A-Z]+_([A-Z]+)$/, '$1');
 const cmnDB = ['CCJD', 'CCND', 'CDMD', 'CIPD', 'CJFD', 'CYFD'];
-if (cmnDB.indexOf(dbcode) == -1) {
+if (cmnDB.indexOf(dbcode) === -1) {
     const oddDB = ['BNJK', 'BSFD', 'CACM', 'CDMH', 'CLKB', 'IPFD'];
     const badDB = ['CCVD', 'CISD', 'CLKC', 'CPVD', 'SCEF', 'SCHF', 'SCOD', 'SCPD', 'SCSF', 'SMSD', 'SNAD', 'SOPD'];
     if (oddDB.indexOf(dbcode) !== -1) {
         const odd2cmn = ['CJFD', 'CYFD', 'CJFD', 'CDMD', 'CDMD', 'CIPD'];
         dbcode = odd2cmn[oddDB.indexOf(dbcode)];
     } else if (badDB.indexOf(dbcode) !== -1) {
-        dbcode = 'BAD-' + dbcode;
-        console.log('[CNKI-Redirect] %s is out of our scope.', dbcodeIn);
+        dbcode = dbcode + '-BAD';
     } else {
         let dbkey = dbcode.replace(/^C(\w)F\w+$/, '$1').replace(/^CF(\w)\w+$/, '$1').replace(/^\w+(\w)$/, '$1');
         const dbkeys = ['D', 'I', 'J', 'M', 'N', 'P', 'Y'];//博士 国际会议 期刊 硕士 报纸 国内会议 年鉴
         const key2cmn = ['CDMD', 'CIPD', 'CJFD', 'CDMD', 'CCND', 'CIPD', 'CYFD'];
-        dbcode = key2cmn[dbkeys.indexOf(dbkey)] || dbcodeIn;
+        dbcode = key2cmn[dbkeys.indexOf(dbkey)] || rawFileID[0] + '-BAD';
     }
-    console.log('[CNKI-Redirect] Convert dbcode from %s to %s.', dbcodeIn, dbcode);
+    console.log('[CNKI-Redirect] Convert dbcode from %s to %s.', rawFileID[0], dbcode);
 }
 ```
 
