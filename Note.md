@@ -30,6 +30,7 @@ CCJD(辑刊)在非文献知网节(如`kns.cnki.net`, `oversea.cnki.net`, `www.cn
 |CCVD|教学视频|
 |CISD|标准|
 |CLKC|案例|
+|CLKLP|法律法规|
 |CPVD|会议视频|
 |SCEF|企业标准|
 |SCHF|行业标准|
@@ -41,7 +42,7 @@ CCJD(辑刊)在非文献知网节(如`kns.cnki.net`, `oversea.cnki.net`, `www.cn
 |SOPD|海外专利|
 |...|...|
 
-## 脚本中对dbcode的处理
+## 脚本中对dbcode的转换处理
 
 ```javascript
 rawFileID = [dbcode.toUpperCase(), filename.toUpperCase()];
@@ -49,7 +50,7 @@ dbcode = rawFileID[0].replace(/^[A-Z]+_([A-Z]+)$/, '$1');
 const cmnDB = ['CCJD', 'CCND', 'CDMD', 'CIPD', 'CJFD', 'CYFD'];
 if (cmnDB.indexOf(dbcode) === -1) {
     const oddDB = ['BNJK', 'BSFD', 'CACM', 'CDMH', 'CLKB', 'IPFD'];
-    const badDB = ['CCVD', 'CISD', 'CLKC', 'CPVD', 'SCEF', 'SCHF', 'SCOD', 'SCPD', 'SCSF', 'SMSD', 'SNAD', 'SOPD'];
+    const badDB = ['CCVD', 'CISD', 'CLKC', 'CLKLP', 'CPVD', 'SCEF', 'SCHF', 'SCOD', 'SCPD', 'SCSF', 'SMSD', 'SNAD', 'SOPD'];
     if (oddDB.indexOf(dbcode) !== -1) {
         const odd2cmn = ['CJFD', 'CYFD', 'CJFD', 'CDMD', 'CDMD', 'CIPD'];
         dbcode = odd2cmn[oddDB.indexOf(dbcode)];
