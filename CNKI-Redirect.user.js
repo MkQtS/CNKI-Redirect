@@ -2,7 +2,7 @@
 // @name         重定向知网至海外版 — PDF、CAJ均可下载
 // @namespace    cnki_to_oversea
 // @description  将知网文献页重定向至海外版以便下载文献。知网海外版支持下载硕博论文PDF、支持机构IP登录。此脚本支持知网主站、知网空间、知网编客、知网拾贝、知网百科、知网阅读、知网文化、知网法律、知网医院数字图书馆、手机知网等站点。
-// @version      4.2
+// @version      4.3
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAB10lEQVQ4jZVSP8hpcRj+nZs6oiPkpFBkoCxnQCeT0rdQyiCZDAwYTOQsBsOR/aRshlMymsSK/JkMysDgz3KOZDmO8t/vDu79fO51b33P9r71vO/7PO+DwKIbfAuw6Ia/IQhCPB6nKEoURfgWRbfkK/l0OrXb7dlsZrPZIpHI2wU/vha322273fp8Pq/X+6+LXgij0Wi32+VyueVymc1m1+v1/zRsNhuCIFQqVSwWUyqVarV6Op1+Hs9xnCiKsOh+Emia/pyi0+mazSaE8HK59Pv9TCbjcDjy+fyL6FAohGEYwzD3+73RaJjN5mq1utlsptOpxWK5Xq/dbhd8vNq63+8ZhjEajbVabbFYGAyGRCJxPB5Pp1MwGOx0Os8Nk8mE4zipVDoYDFarVblcdjqdBEFgGIaiaKVSQRDE5XKBHpAAAHie93g85/PZbrfP53OKotLptEajsVqtrVZLJpPRNO33+w+HAwaABAAAISRJEsfxbDZbr9f1er1Go0EQJJVKDYfDXq9XKpU8Ho9cLn/aKgjCw9lAIFAoFMLh8Gw2e3T2+/2baCgUCp7no9EoSZLRaNRkMkEIWZbFcfyPv/0ijMfjh6HJZFKr1bIsi6KoRCIBfwH5brx/AseDLUJKQoGcAAAAAElFTkSuQmCC
 // @author       MkQtS
 // @license      MIT
@@ -37,7 +37,7 @@
 			CNKIREGEXES = [
 				/^https?:\/\/(?:[\w\.]+\.)?cnki\.net\/(?:law|kcms\d?)\/(?:article\/|detail(?:\?|\/detail)|doi\/)/,
 				/^https?:\/\/xuewen\.cnki\.net\/\w+-[\w\.]+\.htm/,
-				/^https?:\/\/wh\.cnki\.net\/article\/detail\//,
+				/^https?:\/\/wh\.cnki\.net\/(?:m\/)?article\/detail\//,
 				/^https?:\/\/(?:read|wap)\.cnki\.net\/(?:(?:(?:touch\/)?web\/\w+\/article\/)|(?:\w+-[\w\.]+\.htm))/,
 				/^https?:\/\/\w+\.cnki\.net\/urtpweb\/detail\?/,
 				/^https?:\/\/\w+\.cnki\.com\.cn\/article\//,
@@ -105,9 +105,9 @@
 				}
 				break;
 			} case 'wenhua': {
-				if (document.getElementById('journalimg')) {
+				if (document.getElementById('journalimg') || document.getElementsByClassName('hero-cover-img').length) {
 					dbcode = 'CJFD';
-					filename = url.replace(/^https?:\/\/wh\.cnki\.net\/article\/detail\/([\w\.]+).*$/, '$1');
+					filename = url.replace(/^https?:\/\/wh\.cnki\.net\/(?:m\/)?article\/detail\/([\w\.]+).*$/, '$1');
 				}
 				break;
 			} case 'xuewen': {
@@ -142,16 +142,14 @@
 				if (cmnDB.indexOf(dbcode) === -1) {
 					const oddDB = ['BNJK', 'BSFD', 'CACM', 'CDMH', 'CLKB', 'IPFD'],
 						badDB = ['CCVD', 'CISD', 'CLKLP', 'CPVD', 'SCOD', 'SCPD', 'SMSD', 'SNAD', 'SOPD'];
-					if (oddDB.indexOf(dbcode) !== -1) {
-						const odd2cmn = ['CJFD', 'CYFD', 'CJFD', 'CDMD', 'CDMD', 'CIPD'];
-						dbcode = odd2cmn[oddDB.indexOf(dbcode)];
-					} else if (badDB.indexOf(dbcode) !== -1) {
-						dbcode = 'BAD-DB';
-					} else {
+					if (oddDB.indexOf(dbcode) === badDB.indexOf(dbcode)) {
 						let dbKey = dbcode.replace(/^C(\w)F\w+$/, '$1').replace(/^CF(\w)\w+$/, '$1').replace(/^\w+(\w)$/, '$1');
 						const dbKeys = ['D', 'I', 'J', 'M', 'N', 'P', 'Y'],
 							key2cmn = ['CDMD', 'CIPD', 'CJFD', 'CDMD', 'CCND', 'CIPD', 'CYFD'];
 						dbcode = key2cmn[dbKeys.indexOf(dbKey)] || 'BAD-DB';
+					} else {
+						const odd2cmn = ['CJFD', 'CYFD', 'CJFD', 'CDMD', 'CDMD', 'CIPD'];
+						dbcode = odd2cmn[oddDB.indexOf(dbcode)] || 'BAD-DB';
 					}
 					console.debug('[CNKI-Redirect] Convert dbcode from %s to %s.', fileIDObj.raw[0], dbcode);
 				}
@@ -200,21 +198,23 @@
 		} case 'ideal': {
 			let storedSrc = GM_getValue('source') || { sourceUrl: 'clear', fileID: defFileID };
 			if (storedSrc.sourceUrl !== 'clear') {
+				GM_setValue('source', { sourceUrl: 'clear', fileID: defFileID });
 				(source => {
 					const BTNTEXT = {
 						'kns.cnki.net': '🙃 打开源页面',
 						'oversea.cnki.net': '🙃 Open original', 'chn.oversea.cnki.net': '🙃 打开源页面', 'tra.oversea.cnki.net': '🙃 打開源頁面',
 						'global.cnki.net': '🙃 Open original', 'gb.global.cnki.net': '🙃 打开源页面', 'big5.global.cnki.net': '🙃 打開源頁面',
+					};
+					const srcBtn = `<li class='btn-go2src'><a id='go2src' title='${source.sourceUrl}' style='background-color: #e85; color: #fff; padding: 0 8px'>${BTNTEXT[window.location.host]}</a></li>`;
+					let targetArea = document.getElementById('DownLoadParts');
+					if (targetArea) {
+						(targetArea.querySelector('.operate-btn') || targetArea.querySelector('.operate-left'))?.insertAdjacentHTML('beforeend', srcBtn);
+						document.getElementById('go2src')?.addEventListener('click', () => {
+							GM_setValue('banRedirect', source.fileID.raw);
+							window.open(source.sourceUrl, '_blank');
+						});
 					}
-					const srcBtn = `<li class='btn-go2src' style='background-color: rgb(238, 119, 85); color: rgb(255, 255, 255); text-align: center; border: none; border-radius: 4px;'><a id='go2src' title='${source.sourceUrl}'>${BTNTEXT[window.location.host]}</a></li>`;
-					let targetArea = document.getElementById('DownLoadParts').querySelector('.operate-btn') || document.getElementById('DownLoadParts').querySelector('.operate-left');
-					targetArea?.insertAdjacentHTML('beforeend', srcBtn);
-					document.getElementById('go2src')?.addEventListener('click', () => {
-						GM_setValue('banRedirect', source.fileID.raw);
-						window.open(source.sourceUrl, '_blank');
-					});
 				})(storedSrc);
-				GM_setValue('source', { sourceUrl: 'clear', fileID: defFileID });
 			}
 			console.log('[CNKI-Redirect] Ideal case, done.');
 			break;

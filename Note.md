@@ -47,16 +47,14 @@ const cmnDB = ['CCJD', 'CCND', 'CDMD', 'CIPD', 'CJFD', 'CYFD'];
 if (cmnDB.indexOf(dbcode) === -1) {
 	const oddDB = ['BNJK', 'BSFD', 'CACM', 'CDMH', 'CLKB', 'IPFD'],
 		badDB = ['CCVD', 'CISD', 'CLKLP', 'CPVD', 'SCOD', 'SCPD', 'SMSD', 'SNAD', 'SOPD'];
-	if (oddDB.indexOf(dbcode) !== -1) {
-		const odd2cmn = ['CJFD', 'CYFD', 'CJFD', 'CDMD', 'CDMD', 'CIPD'];
-		dbcode = odd2cmn[oddDB.indexOf(dbcode)];
-	} else if (badDB.indexOf(dbcode) !== -1) {
-		dbcode = 'BAD-DB';
-	} else {
+	if (oddDB.indexOf(dbcode) === badDB.indexOf(dbcode)) {
 		let dbKey = dbcode.replace(/^C(\w)F\w+$/, '$1').replace(/^CF(\w)\w+$/, '$1').replace(/^\w+(\w)$/, '$1');
 		const dbKeys = ['D', 'I', 'J', 'M', 'N', 'P', 'Y'],//博士 国际会议 期刊 硕士 报纸 国内会议 年鉴
 			key2cmn = ['CDMD', 'CIPD', 'CJFD', 'CDMD', 'CCND', 'CIPD', 'CYFD'];
 		dbcode = key2cmn[dbKeys.indexOf(dbKey)] || 'BAD-DB';
+	} else {
+		const odd2cmn = ['CJFD', 'CYFD', 'CJFD', 'CDMD', 'CDMD', 'CIPD'];
+		dbcode = odd2cmn[oddDB.indexOf(dbcode)] || 'BAD-DB';
 	}
 	console.debug('[CNKI-Redirect] Convert dbcode from %s to %s.', fileIDObj.raw[0], dbcode);
 }
