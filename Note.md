@@ -38,6 +38,8 @@ CCJD(辑刊)在非文献知网节(如`kns.cnki.net`, `oversea.cnki.net`, `www.cn
 |SOPD|海外专利|
 |...|...|
 
+`READ`并不算dbcode，但对于知网百科的部分文章如`https://xuewen.cnki.net/read-R2012030760000385.html`，链接格式与正常文献相同，脚本会将`read`提取为dbcode，故将其排除。
+
 ## 脚本中对dbcode的转换
 
 ```javascript
@@ -46,7 +48,7 @@ dbcode = fileIDObj.raw[0].replace(/^[A-Z]+_([A-Z]+)$/, '$1');
 const cmnDB = ['CCJD', 'CCND', 'CDMD', 'CIPD', 'CJFD', 'CYFD'];
 if (cmnDB.indexOf(dbcode) === -1) {
 	const oddDB = ['BNJK', 'BSFD', 'CACM', 'CDMH', 'CLKB', 'IPFD'],
-		badDB = ['CCVD', 'CISD', 'CLKLP', 'CPVD', 'SCOD', 'SCPD', 'SMSD', 'SNAD', 'SOPD'];
+		badDB = ['CCVD', 'CISD', 'CLKLP', 'CPVD', 'READ', 'SCOD', 'SCPD', 'SMSD', 'SNAD', 'SOPD'];
 	if (oddDB.indexOf(dbcode) === badDB.indexOf(dbcode)) {
 		let dbKey = dbcode.replace(/^C(\w)F\w+$/, '$1').replace(/^CF(\w)\w+$/, '$1').replace(/^\w+(\w)$/, '$1');
 		const dbKeys = ['D', 'I', 'J', 'M', 'N', 'P', 'Y'],//博士 国际会议 期刊 硕士 报纸 国内会议 年鉴
@@ -78,4 +80,3 @@ if (cmnDB.indexOf(dbcode) === -1) {
 3. 跳转至错误页面可能无法自动回到原页面
 
 </details>
-
