@@ -20,13 +20,11 @@
 
 在浏览器中安装*Tampermonkey*类插件后安装此脚本
 
-[从Greasy Fork安装](https://greasyfork.org/scripts/453031)
+从 [Greasy Fork](https://greasyfork.org/scripts/453031) 或 [GitHub](https://raw.githubusercontent.com/MkQtS/CNKI-Redirect/main/CNKI-Redirect.user.js) 安装
 
-[从GitHub安装](https://raw.githubusercontent.com/MkQtS/CNKI-Redirect/main/CNKI-Redirect.user.js)
+安装后，打开知网文献页时，会自动跳转到同一文献的海外版知网页面，不会影响非文献页。若有需要可通过页面中的`打开源页面`按钮打开原文献页面。
 
-安装后，打开知网文献页时，会自动跳转到同一文献的海外版知网页面，不会影响非文献页。若有需要可通过页面中的`🙃 打开源页面`按钮打开原文献页面。
-
-**提示:** 部分文献未上线海外版，故可能跳转至错误页面。脚本能检测到此错误并自动回退到原页面，无需任何操作。
+**提示:** 部分文献未上线海外版，故海外版页面可能报错。脚本会自动尝试跳转至`kns.cnki.net`上的同一文献页，若再次失败则会自动回退到原页面，无需任何操作。
 
 ## 原理
 
