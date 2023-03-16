@@ -21,7 +21,7 @@
 
 目前脚本只计划适配以上6类文献，相关dbcode来自知网文献页、搜索页。部分dbcode在`oversea.cnki.net`中直接使用可能会报错。脚本会将各种(疑似)dbcode变体转换为`CCJD, CCND, CDMD, CIPD, CJFD, CYFD`之一。
 
-CCJD(辑刊)在非文献知网节(如`kns.cnki.net`, `oversea.cnki.net`, `www.cnki.net`)站点可能会使用CJFD(期刊)的形式，但文献知网节页面只能使用CCJD。
+CCJD(辑刊)在非文献知网节(如`kns.cnki.net`, `oversea.cnki.net`, `www.cnki.net`)站点可能会使用CJFD(期刊)的形式，如`https://www.cnki.com.cn/Article/CJFDTOTAL-ZXTG202001007.htm`，但文献知网节页面只能使用CCJD。
 
 ### 不支持的类型
 
@@ -43,14 +43,14 @@ CCJD(辑刊)在非文献知网节(如`kns.cnki.net`, `oversea.cnki.net`, `www.cn
 ## 脚本中对dbcode的转换
 
 ```javascript
-fileIDObj = { raw: [dbcode.toUpperCase(), filename.toUpperCase()] };
+let fileIDObj = { raw: [dbcode.toUpperCase(), filename.toUpperCase()] };
 dbcode = fileIDObj.raw[0].replace(/^[A-Z]+_([A-Z]+)$/, '$1');
 const cmnDB = ['CCJD', 'CCND', 'CDMD', 'CIPD', 'CJFD', 'CYFD'];
-if (cmnDB.indexOf(dbcode) === -1) {
+if (!cmnDB.includes(dbcode)) {
 	const oddDB = ['BNJK', 'BSFD', 'CACM', 'CDMH', 'CLKB', 'IPFD'],
 		badDB = ['CCVD', 'CISD', 'CLKLP', 'CPVD', 'READ', 'SCOD', 'SCPD', 'SMSD', 'SNAD', 'SOPD'];
 	if (oddDB.indexOf(dbcode) === badDB.indexOf(dbcode)) {
-		let dbKey = dbcode.replace(/^C(\w)F\w+$/, '$1').replace(/^CF(\w)\w+$/, '$1').replace(/^\w+(\w)$/, '$1');
+		let dbKey = dbcode.replace(/^C(\w)?F(\w)\w*$/, 'to$2$1').replace(/^\w+(\w)$/, '$1');
 		const dbKeys = ['D', 'I', 'J', 'M', 'N', 'P', 'Y'],//博士 国际会议 期刊 硕士 报纸 国内会议 年鉴
 			key2cmn = ['CDMD', 'CIPD', 'CJFD', 'CDMD', 'CCND', 'CIPD', 'CYFD'];
 		dbcode = key2cmn[dbKeys.indexOf(dbKey)] || 'BAD-DB';
