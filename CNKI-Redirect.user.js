@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         重定向知网至海外版 — PDF、CAJ均可下载
-// @namespace    cnki_to_oversea
-// @description  将知网文献页重定向至海外版以便下载文献。知网海外版支持下载硕博论文PDF、支持机构IP登录。此脚本支持知网主站、知网空间、知网编客、知网拾贝、知网百科、知网阅读、知网文化、知网法律、知网医院数字图书馆、手机知网等站点。
-// @version      4.5
+// @name         知网重定向 — 便于使用机构IP登录下载
+// @namespace    cnki_redirector
+// @description  将来自知网主站、知网空间、知网编客、知网拾贝、知网百科、知网阅读、知网文化、知网法律、知网医院数字图书馆、手机知网等站点的知网文献页重定向至知网主站`kns.cnki.net`上的标准地址以便下载文献。`kns.cnki.net`支持通过机构IP免个人账号下载，目前已提供硕博论文全文PDF下载。
+// @version      4.6
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAB10lEQVQ4jZVSP8hpcRj+nZs6oiPkpFBkoCxnQCeT0rdQyiCZDAwYTOQsBsOR/aRshlMymsSK/JkMysDgz3KOZDmO8t/vDu79fO51b33P9r71vO/7PO+DwKIbfAuw6Ia/IQhCPB6nKEoURfgWRbfkK/l0OrXb7dlsZrPZIpHI2wU/vha322273fp8Pq/X+6+LXgij0Wi32+VyueVymc1m1+v1/zRsNhuCIFQqVSwWUyqVarV6Op1+Hs9xnCiKsOh+Emia/pyi0+mazSaE8HK59Pv9TCbjcDjy+fyL6FAohGEYwzD3+73RaJjN5mq1utlsptOpxWK5Xq/dbhd8vNq63+8ZhjEajbVabbFYGAyGRCJxPB5Pp1MwGOx0Os8Nk8mE4zipVDoYDFarVblcdjqdBEFgGIaiaKVSQRDE5XKBHpAAAHie93g85/PZbrfP53OKotLptEajsVqtrVZLJpPRNO33+w+HAwaABAAAISRJEsfxbDZbr9f1er1Go0EQJJVKDYfDXq9XKpU8Ho9cLn/aKgjCw9lAIFAoFMLh8Gw2e3T2+/2baCgUCp7no9EoSZLRaNRkMkEIWZbFcfyPv/0ijMfjh6HJZFKr1bIsi6KoRCIBfwH5brx/AseDLUJKQoGcAAAAAElFTkSuQmCC
 // @author       MkQtS
 // @license      MIT
@@ -20,7 +20,7 @@
 (function CNKI_Redirect(currentUrl) {
 	'use strict';
 	function IdentifyCase(url) {
-		const CNKICASES = ['error', 'preferred', 'tolerable', 'bianke', 'mall', 'my', 'space', 'urtpweb', 'wap', 'wenhua', 'xuewen', 'common'],
+		const CNKICASES = ['error', 'abroad', 'domestic', 'bianke', 'mall', 'my', 'space', 'urtpweb', 'wap', 'wenhua', 'xuewen', 'common'],
 			CNKIREGEXES = [
 				/^https?:\/\/[\w\.]+\.cnki\.net\/kcms\/detail\/error/,
 				/^https?:\/\/(?:\w+\.)?(?:global|oversea)\.cnki\.net\/kcms\/detail\/detail\.aspx\?dbcode=\w+&filename=[\w\.]+$/,
@@ -155,15 +155,9 @@
 		return fileID;
 	}
 
-	const [prefSite, tolrSite] = ['chn.oversea.cnki.net', 'kns.cnki.net'];
 	function GenerateCandidateUrls(fileID) {
 		let candidateUrls = ['clear'], dbFiles = [fileID.alter, fileID.target].filter(dbfile => !!dbfile);
-		dbFiles.forEach(dbfile => {
-			candidateUrls.push('https://' + tolrSite + '/kcms/detail/detail.aspx?dbcode=' + dbfile[0] + '&filename=' + dbfile[1]);
-			if (dbfile[0] !== 'CYFD') {
-				candidateUrls.push('https://' + prefSite + '/kcms/detail/detail.aspx?dbcode=' + dbfile[0] + '&filename=' + dbfile[1]);
-			}
-		});
+		dbFiles.forEach(dbfile => candidateUrls.push('https://kns.cnki.net/kcms/detail/detail.aspx?dbcode=' + dbfile[0] + '&filename=' + dbfile[1]));
 		return candidateUrls.reverse();
 	}
 
@@ -190,21 +184,22 @@
 				}
 			}
 			break;
-		} case 'preferred':
-		case 'tolerable': {
+		} case 'abroad':
+		case 'domestic': {
 			let targetArea = document.getElementById('DownLoadParts')?.querySelector('.operate-btn') || document.getElementById('DownLoadParts')?.querySelector('.operate-left');
+			/* Abroad cnki sites seem unavailable now
 			if (!!targetArea) {
-				const RIVALTEXT = { 'preferred': '🥝 打开国内站', 'tolerable': '🥝 打开海外站' },
-					RIVALSITE = { 'preferred': tolrSite, 'tolerable': prefSite };
+				const RIVALTEXT = { 'abroad': '🍋 打开国内站', 'domestic': '🍋 打开海外站' },
+					RIVALSITE = { 'abroad': 'kns.cnki.net', 'domestic': 'chn.oversea.cnki.net' };
 				let rivalUrl = currentUrl.replace(/^https:\/\/[\w\.]+\.cnki\.net/i, 'https://' + RIVALSITE[situation]);
 				const rivalBtn = `<li class='btn-go2rvl'><a id='go2rvl' href='${rivalUrl}' target='_blank' style='background-color: #6a8; color: #fff'>${RIVALTEXT[situation]}</a></li>`;
 				targetArea.insertAdjacentHTML('beforeend', rivalBtn);
-			}
+			}*/
 			let storedSrc = GM_getValue('source') || { sourceUrl: 'clear', fileID: defFileID };
 			if (storedSrc.sourceUrl !== 'clear') {
 				GM_setValue('candidates', ['clear']);
 				GM_setValue('source', { sourceUrl: 'clear', fileID: defFileID });
-				const srcBtn = `\n<li class='btn-go2src'><a id='go2src' title='${storedSrc.sourceUrl}' style='background-color: #9a5; color: #fff'>🍋 打开源页面</a></li>`;
+				const srcBtn = `\n<li class='btn-go2src'><a id='go2src' title='${storedSrc.sourceUrl}' style='background-color: #9a5; color: #fff'>🥝 打开源页面</a></li>`;
 				targetArea?.insertAdjacentHTML('beforeend', srcBtn);
 				document.getElementById('go2src')?.addEventListener('click', () => {
 					GM_setValue('banRedirect', storedSrc.fileID.raw);
