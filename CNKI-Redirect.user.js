@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         知网重定向 — 便于使用机构IP登录下载
 // @namespace    cnki_redirector
-// @description  将来自知网主站、知网空间、知网编客、知网拾贝、知网百科、知网阅读、知网文化、知网法律、知网医院数字图书馆、手机知网等站点的知网文献页重定向至知网主站`kns.cnki.net`上的标准地址以便下载文献。`kns.cnki.net`支持通过机构IP免个人账号下载，目前已提供硕博论文全文PDF下载。
-// @version      4.6
+// @description  将来自知网主站、知网空间、知网编客、知网百科、知网阅读、知网文化、知网法律、知网医院数字图书馆、手机知网等站点的知网文献页重定向至知网主站`kns.cnki.net`上的标准地址以便下载文献。`kns.cnki.net`支持通过机构IP免个人账号下载，目前已提供硕博论文全文PDF下载。
+// @version      4.7
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAB10lEQVQ4jZVSP8hpcRj+nZs6oiPkpFBkoCxnQCeT0rdQyiCZDAwYTOQsBsOR/aRshlMymsSK/JkMysDgz3KOZDmO8t/vDu79fO51b33P9r71vO/7PO+DwKIbfAuw6Ia/IQhCPB6nKEoURfgWRbfkK/l0OrXb7dlsZrPZIpHI2wU/vha322273fp8Pq/X+6+LXgij0Wi32+VyueVymc1m1+v1/zRsNhuCIFQqVSwWUyqVarV6Op1+Hs9xnCiKsOh+Emia/pyi0+mazSaE8HK59Pv9TCbjcDjy+fyL6FAohGEYwzD3+73RaJjN5mq1utlsptOpxWK5Xq/dbhd8vNq63+8ZhjEajbVabbFYGAyGRCJxPB5Pp1MwGOx0Os8Nk8mE4zipVDoYDFarVblcdjqdBEFgGIaiaKVSQRDE5XKBHpAAAHie93g85/PZbrfP53OKotLptEajsVqtrVZLJpPRNO33+w+HAwaABAAAISRJEsfxbDZbr9f1er1Go0EQJJVKDYfDXq9XKpU8Ho9cLn/aKgjCw9lAIFAoFMLh8Gw2e3T2+/2baCgUCp7no9EoSZLRaNRkMkEIWZbFcfyPv/0ijMfjh6HJZFKr1bIsi6KoRCIBfwH5brx/AseDLUJKQoGcAAAAAElFTkSuQmCC
 // @author       MkQtS
 // @license      MIT
@@ -20,14 +20,13 @@
 (function CNKI_Redirect(currentUrl) {
 	'use strict';
 	function IdentifyCase(url) {
-		const CNKICASES = ['error', 'abroad', 'domestic', 'bianke', 'mall', 'my', 'space', 'urtpweb', 'wap', 'wenhua', 'xuewen', 'common'],
+		const CNKICASES = ['error', 'abroad', 'domestic', 'bianke', 'mall', 'space', 'urtpweb', 'wap', 'wenhua', 'xuewen', 'common'],
 			CNKIREGEXES = [
 				/^https?:\/\/[\w\.]+\.cnki\.net\/kcms\/detail\/error/,
 				/^https?:\/\/(?:\w+\.)?(?:global|oversea)\.cnki\.net\/kcms\/detail\/detail\.aspx\?dbcode=\w+&filename=[\w\.]+$/,
 				/^https?:\/\/(?:kns|www)\.cnki\.net\/kcms\/detail\/detail\.aspx\?dbcode=\w+&filename=[\w\.]+$/,
 				/^https?:\/\/bianke\.cnki\.net\/web\/article\//,
 				/^https?:\/\/mall\.cnki\.net\/magazine\/article\//,
-				/^https?:\/\/my\.cnki\.net\/(?:m\/)?documentdetail\.html\?/,
 				/^https?:\/\/\w+\.cnki\.com\.cn\/article\//,
 				/^https?:\/\/\w+\.cnki\.net\/urtpweb\/detail\?/,
 				/^https?:\/\/(?:read|wap)\.cnki\.net\/(?:(?:(?:touch\/)?web\/\w+\/article\/)|(?:\w+-[\w\.]+\.htm))/,
@@ -58,11 +57,6 @@
 					dbcode = downParams.get('dbtype');
 					filename = downParams.get('filename');
 				}
-				break;
-			} case 'my': {
-				let urlParams = new URLSearchParams(url.split('?')[1]);
-				dbcode = urlParams.get('productid');
-				filename = urlParams.get('filename');
 				break;
 			} case 'space': {
 				let fileinfo = url.replace(/^https?:\/\/(\w+)\.cnki\.com\.cn\/article\/([\w\.-]+)\.htm.*$/, '$1-$2').replace(/^\w+-(\w+)(?:(?:-\d+)|(?:total))-([\w\.]+)$/, '$1-$2');
@@ -186,27 +180,33 @@
 			break;
 		} case 'abroad':
 		case 'domestic': {
-			let targetArea = document.getElementById('DownLoadParts')?.querySelector('.operate-btn') || document.getElementById('DownLoadParts')?.querySelector('.operate-left');
-			/* Abroad cnki sites seem unavailable now
-			if (!!targetArea) {
-				const RIVALTEXT = { 'abroad': '🍋 打开国内站', 'domestic': '🍋 打开海外站' },
-					RIVALSITE = { 'abroad': 'kns.cnki.net', 'domestic': 'chn.oversea.cnki.net' };
-				let rivalUrl = currentUrl.replace(/^https:\/\/[\w\.]+\.cnki\.net/i, 'https://' + RIVALSITE[situation]);
-				const rivalBtn = `<li class='btn-go2rvl'><a id='go2rvl' href='${rivalUrl}' target='_blank' style='background-color: #6a8; color: #fff'>${RIVALTEXT[situation]}</a></li>`;
-				targetArea.insertAdjacentHTML('beforeend', rivalBtn);
-			}*/
-			let storedSrc = GM_getValue('source') || { sourceUrl: 'clear', fileID: defFileID };
-			if (storedSrc.sourceUrl !== 'clear') {
-				GM_setValue('candidates', ['clear']);
-				GM_setValue('source', { sourceUrl: 'clear', fileID: defFileID });
-				const srcBtn = `\n<li class='btn-go2src'><a id='go2src' title='${storedSrc.sourceUrl}' style='background-color: #9a5; color: #fff'>🥝 打开源页面</a></li>`;
-				targetArea?.insertAdjacentHTML('beforeend', srcBtn);
-				document.getElementById('go2src')?.addEventListener('click', () => {
-					GM_setValue('banRedirect', storedSrc.fileID.raw);
-					window.open(storedSrc.sourceUrl, '_blank');
-				});
+			if (!document.referrer.includes('cnki.net')) {
+				window.stop();
+				console.warn('[CNKI-Redirect] Without proper referrer, CNKI will not show some contents. Reload to refresh referrer...');
+				window.location.replace(currentUrl);
+			} else {
+				let targetArea = document.getElementById('DownLoadParts')?.querySelector('.operate-btn') || document.getElementById('DownLoadParts')?.querySelector('.operate-left');
+				/* Currently, abroad and domestic CNKI are the same, no need to swith.
+				if (!!targetArea) {
+					const RIVALTEXT = { 'abroad': '🍋 打开国内站', 'domestic': '🍋 打开海外站' },
+						RIVALSITE = { 'abroad': 'kns.cnki.net', 'domestic': 'chn.oversea.cnki.net' };
+					let rivalUrl = currentUrl.replace(/^https:\/\/[\w\.]+\.cnki\.net/i, 'https://' + RIVALSITE[situation]);
+					const rivalBtn = `<li class='btn-go2rvl'><a id='go2rvl' href='${rivalUrl}' target='_blank' style='background-color: #6a8; color: #fff'>${RIVALTEXT[situation]}</a></li>`;
+					targetArea.insertAdjacentHTML('beforeend', rivalBtn);
+				}*/
+				let storedSrc = GM_getValue('source') || { sourceUrl: 'clear', fileID: defFileID };
+				if (storedSrc.sourceUrl !== 'clear') {
+					GM_setValue('candidates', ['clear']);
+					GM_setValue('source', { sourceUrl: 'clear', fileID: defFileID });
+					const srcBtn = `\n<li class='btn-go2src'><a id='go2src' title='${storedSrc.sourceUrl}' style='background-color: #9a5; color: #fff'>🥝 打开源页面</a></li>`;
+					targetArea?.insertAdjacentHTML('beforeend', srcBtn);
+					document.getElementById('go2src')?.addEventListener('click', () => {
+						GM_setValue('banRedirect', storedSrc.fileID.raw);
+						window.open(storedSrc.sourceUrl, '_blank');
+					});
+				}
+				console.log('[CNKI-Redirect] Ideal case, done.');
 			}
-			console.log('[CNKI-Redirect] Ideal case, done.');
 			break;
 		} default: {
 			console.info('[CNKI-Redirect] Rule for %s matched.', situation);
