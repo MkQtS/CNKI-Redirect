@@ -1,17 +1,17 @@
 // ==UserScript==
 // @name         知网重定向 — 便于使用机构IP登录下载
 // @namespace    cnki_redirector
-// @description  将来自知网主站、知网空间、知网编客、知网百科、知网阅读、知网文化、知网法律、知网医院数字图书馆、手机知网等站点的知网文献页重定向至知网主站`kns.cnki.net`上的标准地址以便下载文献。`kns.cnki.net`支持通过机构IP免个人账号下载，目前已提供硕博论文全文PDF下载。
-// @version      4.7
+// @description  将来自知网主站、知网空间、知网编客、知网百科、知网阅读、知网文化、知网法律、知网医院数字图书馆、手机知网等站点的知网文献页重定向至知网主站`kns.cnki.net`，支持获取知网文献无追踪链接。
+// @version      4.8
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAB10lEQVQ4jZVSP8hpcRj+nZs6oiPkpFBkoCxnQCeT0rdQyiCZDAwYTOQsBsOR/aRshlMymsSK/JkMysDgz3KOZDmO8t/vDu79fO51b33P9r71vO/7PO+DwKIbfAuw6Ia/IQhCPB6nKEoURfgWRbfkK/l0OrXb7dlsZrPZIpHI2wU/vha322273fp8Pq/X+6+LXgij0Wi32+VyueVymc1m1+v1/zRsNhuCIFQqVSwWUyqVarV6Op1+Hs9xnCiKsOh+Emia/pyi0+mazSaE8HK59Pv9TCbjcDjy+fyL6FAohGEYwzD3+73RaJjN5mq1utlsptOpxWK5Xq/dbhd8vNq63+8ZhjEajbVabbFYGAyGRCJxPB5Pp1MwGOx0Os8Nk8mE4zipVDoYDFarVblcdjqdBEFgGIaiaKVSQRDE5XKBHpAAAHie93g85/PZbrfP53OKotLptEajsVqtrVZLJpPRNO33+w+HAwaABAAAISRJEsfxbDZbr9f1er1Go0EQJJVKDYfDXq9XKpU8Ho9cLn/aKgjCw9lAIFAoFMLh8Gw2e3T2+/2baCgUCp7no9EoSZLRaNRkMkEIWZbFcfyPv/0ijMfjh6HJZFKr1bIsi6KoRCIBfwH5brx/AseDLUJKQoGcAAAAAElFTkSuQmCC
 // @author       MkQtS
 // @license      MIT
 // @homepage     https://github.com/MkQtS/CNKI-Redirect
 // @supportURL   https://github.com/MkQtS/CNKI-Redirect/issues
 // @run-at       document-end
-// @match        *://cnki.net/*
 // @match        *://*.cnki.net/*
 // @match        *://*.cnki.com.cn/*
+// @exclude      *://kns.cnki.net/kns8/*
 // @exclude      *://*.cnki.net/kcms/detail/frame/*
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -20,19 +20,19 @@
 (function CNKI_Redirect(currentUrl) {
 	'use strict';
 	function IdentifyCase(url) {
-		const CNKICASES = ['error', 'abroad', 'domestic', 'bianke', 'mall', 'space', 'urtpweb', 'wap', 'wenhua', 'xuewen', 'common'],
+		const CNKICASES = ['error', 'kcms', 'kcms2', 'bianke', 'mall', 'space', 'urtpweb', 'wap', 'wenhua', 'xuewen', 'common'],
 			CNKIREGEXES = [
 				/^https?:\/\/[\w\.]+\.cnki\.net\/kcms\/detail\/error/,
-				/^https?:\/\/(?:\w+\.)?(?:global|oversea)\.cnki\.net\/kcms\/detail\/detail\.aspx\?dbcode=\w+&filename=[\w\.]+$/,
-				/^https?:\/\/(?:kns|www)\.cnki\.net\/kcms\/detail\/detail\.aspx\?dbcode=\w+&filename=[\w\.]+$/,
+				/^https?:\/\/(\w+\.)?(global|kns|oversea|www)\.cnki\.net\/kcms\/detail\/detail\.aspx\?dbcode=\w+&filename=[\w\.]+$/,
+				/^https?:\/\/kns\.cnki\.net\/kcms2\/article\/abstract\?/,
 				/^https?:\/\/bianke\.cnki\.net\/web\/article\//,
 				/^https?:\/\/mall\.cnki\.net\/magazine\/article\//,
 				/^https?:\/\/\w+\.cnki\.com\.cn\/article\//,
 				/^https?:\/\/\w+\.cnki\.net\/urtpweb\/detail\?/,
-				/^https?:\/\/(?:read|wap)\.cnki\.net\/(?:(?:(?:touch\/)?web\/\w+\/article\/)|(?:\w+-[\w\.]+\.htm))/,
-				/^https?:\/\/wh\.cnki\.net\/(?:m\/)?article\/detail\//,
+				/^https?:\/\/(read|wap)\.cnki\.net\/(((touch\/)?web\/\w+\/article\/)|(\w+-[\w\.]+\.htm))/,
+				/^https?:\/\/wh\.cnki\.net\/(m\/)?article\/detail\//,
 				/^https?:\/\/xuewen\.cnki\.net\/\w+-[\w\.]+\.htm/,
-				/^https?:\/\/(?:[\w\.]+\.)?cnki\.net\/(?:law|kcms\d?)\/(?:article\/|detail(?:\?|\/detail)|doi\/)/
+				/^https?:\/\/([\w\.]+\.)?cnki\.net\/(law|kcms\d?)\/(article\/|detail(\?|\/detail)|doi\/)/
 			];
 		return CNKICASES[CNKIREGEXES.findIndex(cnkiReg => cnkiReg.test(url.toLowerCase()))] || 'skip';
 	}
@@ -48,6 +48,10 @@
 					dbcode = dbinfo.replace(/^https?:\/\/bianke\.cnki\.net\/z\/download\/article\/[\w\.]+\/(\w+)\/.+$/, '$1').replace(/^https?:\/\/search\.cnki\.com\.cn\/(\w+)\/.+$/, '$1');
 					filename = url.replace(/^https?:\/\/bianke\.cnki\.net\/web\/article\/([\w\.]+)\.htm.*$/, '$1');
 				}
+				break;
+			} case 'kns': {
+				dbcode = document.getElementById('paramdbname')?.value.replace(/(auto|day|last|temp|total|\d+)/gi, '').replace(/^(\w{4})\w+$/, '$1') || document.getElementById('paramdbcode')?.value;
+				filename = document.getElementById('paramfilename')?.value;
 				break;
 			} case 'mall': {
 				dbcode = document.getElementById('articleType')?.value;
@@ -149,10 +153,15 @@
 		return fileID;
 	}
 
-	function GenerateCandidateUrls(fileID) {
-		let candidateUrls = ['clear'], dbFiles = [fileID.alter, fileID.target].filter(dbfile => !!dbfile);
-		dbFiles.forEach(dbfile => candidateUrls.push('https://kns.cnki.net/kcms/detail/detail.aspx?dbcode=' + dbfile[0] + '&filename=' + dbfile[1]));
-		return candidateUrls.reverse();
+	function GenerateCnkiUrls(fileID, pref) {
+		const kcmsHead = 'https://kns.cnki.net/kcms/detail/detail.aspx?', kcms2Head = 'https://kns.cnki.net/kns8/detail?sfield=fn&';
+		let cnkiUrls = ['clear'], dbFiles = [fileID.alter, fileID.target].filter(dbfile => !!dbfile);
+		dbFiles.forEach(dbfile => {
+			let cnkiHead, fileinfo = 'dbcode=' + dbfile[0] + '&filename=' + dbfile[1];
+			pref === 'kcms' ? cnkiHead = kcmsHead : cnkiHead = kcms2Head;
+			cnkiUrls.unshift(cnkiHead + fileinfo);
+		});
+		return cnkiUrls;
 	}
 
 	let situation = IdentifyCase(currentUrl);
@@ -178,35 +187,35 @@
 				}
 			}
 			break;
-		} case 'abroad':
-		case 'domestic': {
-			if (!document.referrer.includes('cnki.net')) {
-				window.stop();
-				console.warn('[CNKI-Redirect] Without proper referrer, CNKI will not show some contents. Reload to refresh referrer...');
-				window.location.replace(currentUrl);
-			} else {
-				let targetArea = document.getElementById('DownLoadParts')?.querySelector('.operate-btn') || document.getElementById('DownLoadParts')?.querySelector('.operate-left');
-				/* Currently, abroad and domestic CNKI are the same, no need to swith.
-				if (!!targetArea) {
-					const RIVALTEXT = { 'abroad': '🍋 打开国内站', 'domestic': '🍋 打开海外站' },
-						RIVALSITE = { 'abroad': 'kns.cnki.net', 'domestic': 'chn.oversea.cnki.net' };
-					let rivalUrl = currentUrl.replace(/^https:\/\/[\w\.]+\.cnki\.net/i, 'https://' + RIVALSITE[situation]);
-					const rivalBtn = `<li class='btn-go2rvl'><a id='go2rvl' href='${rivalUrl}' target='_blank' style='background-color: #6a8; color: #fff'>${RIVALTEXT[situation]}</a></li>`;
+		} case 'kcms':
+		case 'kcms2': {
+			let targetArea = document.getElementById('DownLoadParts')?.querySelector('.operate-btn') || document.getElementById('DownLoadParts')?.querySelector('.operate-left');
+			if (!!targetArea) {
+				let fileID = FetchFileID('kns', currentUrl);
+				if (fileID.target[0] !== 'clear') {
+					const kcmsConvert = {
+						kcms: { prefType: 'kcms2', btnText: '🍋 打开KCMS2', btnTitle: 'KCMS2链接能显示更多内容（如硕博论文全文PDF），但链接参数可能被知网追踪' },
+						kcms2: { prefType: 'kcms', btnText: '🍋 打开KCMS', btnTitle: 'KCMS链接更简洁不含跟踪参数，但页面可能缺少部分内容' }
+					};
+					let [rivalUrl, rivalText, rivalTitle] = [GenerateCnkiUrls(fileID, kcmsConvert[situation].prefType)[0], kcmsConvert[situation].btnText, kcmsConvert[situation].btnTitle];
+					const rivalBtn = `<li class='btn-go2rvl'><a id='go2rvl' href='${rivalUrl}' target='_blank' title='${rivalTitle}' style='background-color: #6a8; color: #fff'>${rivalText}</a></li>`;
 					targetArea.insertAdjacentHTML('beforeend', rivalBtn);
-				}*/
-				let storedSrc = GM_getValue('source') || { sourceUrl: 'clear', fileID: defFileID };
-				if (storedSrc.sourceUrl !== 'clear') {
-					GM_setValue('candidates', ['clear']);
-					GM_setValue('source', { sourceUrl: 'clear', fileID: defFileID });
+				}
+			}
+			let storedSrc = GM_getValue('source') || { sourceUrl: 'clear', fileID: defFileID };
+			if (storedSrc.sourceUrl !== 'clear') {
+				GM_setValue('candidates', ['clear']);
+				GM_setValue('source', { sourceUrl: 'clear', fileID: defFileID });
+				if (!!targetArea) {
 					const srcBtn = `\n<li class='btn-go2src'><a id='go2src' title='${storedSrc.sourceUrl}' style='background-color: #9a5; color: #fff'>🥝 打开源页面</a></li>`;
-					targetArea?.insertAdjacentHTML('beforeend', srcBtn);
-					document.getElementById('go2src')?.addEventListener('click', () => {
+					targetArea.insertAdjacentHTML('beforeend', srcBtn);
+					document.getElementById('go2src').addEventListener('click', () => {
 						GM_setValue('banRedirect', storedSrc.fileID.raw);
 						window.open(storedSrc.sourceUrl, '_blank');
 					});
 				}
-				console.log('[CNKI-Redirect] Ideal case, done.');
 			}
+			console.log('[CNKI-Redirect] Ideal case, done.');
 			break;
 		} default: {
 			console.info('[CNKI-Redirect] Rule for %s matched.', situation);
@@ -220,7 +229,7 @@
 				} else {
 					window.stop();
 					GM_setValue('source', { sourceUrl: currentUrl, fileID: fileID });
-					let candidates = GenerateCandidateUrls(fileID), targetUrl = candidates.shift();
+					let candidates = GenerateCnkiUrls(fileID), targetUrl = candidates.shift();
 					GM_setValue('candidates', candidates);
 					window.location.replace(targetUrl);
 				}

@@ -21,7 +21,7 @@
 
 目前脚本只计划适配以上6类文献，相关dbcode来自知网文献页、搜索页。部分dbcode在`oversea.cnki.net`中直接使用可能会报错。脚本会将各种(疑似)dbcode变体转换为`CCJD, CCND, CDMD, CIPD, CJFD, CYFD`之一。
 
-CCJD(辑刊)在非文献知网节(如`kns.cnki.net`, `oversea.cnki.net`, `www.cnki.net`)站点可能会使用CJFD(期刊)的形式，如`https://www.cnki.com.cn/Article/CJFDTOTAL-ZXTG202001007.htm`，但文献知网节页面只能使用CCJD。
+CCJD(辑刊)在非文献知网节(如`kns.cnki.net`, `oversea.cnki.net`, `www.cnki.net`)站点可能会使用CJFD(期刊)的形式，如`https://www.cnki.com.cn/Article/CJFDTOTAL-ZXTG202001007.htm`，但部分页面只能使用CCJD。
 
 ### 不支持的类型
 
@@ -68,7 +68,7 @@ if (!cmnDB.includes(dbcode)) {
 
 <details>
 
-脚本在获取到dbcode和filename以后通过`GenerateCandidateUrls`函数生成目标链接数组，可以修改此函数来改变最终到达的链接。可能的场景：
+脚本在获取到dbcode和filename以后通过`GenerateCnkiUrls`函数生成目标链接数组，可以修改此函数来改变最终到达的链接。可能的场景：
 
 1. 使用英文或繁体中文版知网
 2. 使用所在机构建立的知网本地镜像
