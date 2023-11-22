@@ -2,7 +2,7 @@
 // @name         知网重定向 — 便于使用机构IP登录下载
 // @namespace    cnki_redirector
 // @description  将来自知网主站、知网空间、知网编客、知网百科、知网阅读、知网文化、知网法律、知网医院数字图书馆、手机知网等站点的知网文献页重定向至知网主站`kns.cnki.net`，支持获取知网文献无追踪链接。
-// @version      4.8
+// @version      4.9
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAB10lEQVQ4jZVSP8hpcRj+nZs6oiPkpFBkoCxnQCeT0rdQyiCZDAwYTOQsBsOR/aRshlMymsSK/JkMysDgz3KOZDmO8t/vDu79fO51b33P9r71vO/7PO+DwKIbfAuw6Ia/IQhCPB6nKEoURfgWRbfkK/l0OrXb7dlsZrPZIpHI2wU/vha322273fp8Pq/X+6+LXgij0Wi32+VyueVymc1m1+v1/zRsNhuCIFQqVSwWUyqVarV6Op1+Hs9xnCiKsOh+Emia/pyi0+mazSaE8HK59Pv9TCbjcDjy+fyL6FAohGEYwzD3+73RaJjN5mq1utlsptOpxWK5Xq/dbhd8vNq63+8ZhjEajbVabbFYGAyGRCJxPB5Pp1MwGOx0Os8Nk8mE4zipVDoYDFarVblcdjqdBEFgGIaiaKVSQRDE5XKBHpAAAHie93g85/PZbrfP53OKotLptEajsVqtrVZLJpPRNO33+w+HAwaABAAAISRJEsfxbDZbr9f1er1Go0EQJJVKDYfDXq9XKpU8Ho9cLn/aKgjCw9lAIFAoFMLh8Gw2e3T2+/2baCgUCp7no9EoSZLRaNRkMkEIWZbFcfyPv/0ijMfjh6HJZFKr1bIsi6KoRCIBfwH5brx/AseDLUJKQoGcAAAAAElFTkSuQmCC
 // @author       MkQtS
 // @license      MIT
@@ -153,7 +153,7 @@
 		return fileID;
 	}
 
-	function GenerateCnkiUrls(fileID, pref) {
+	function GenerateCnkiUrls(fileID, pref) { // todo: find a proper way to generate kcms2 link
 		const kcmsHead = 'https://kns.cnki.net/kcms/detail/detail.aspx?', kcms2Head = 'https://kns.cnki.net/kns8/detail?sfield=fn&';
 		let cnkiUrls = ['clear'], dbFiles = [fileID.alter, fileID.target].filter(dbfile => !!dbfile);
 		dbFiles.forEach(dbfile => {
@@ -190,7 +190,7 @@
 		} case 'kcms':
 		case 'kcms2': {
 			let targetArea = document.getElementById('DownLoadParts')?.querySelector('.operate-btn') || document.getElementById('DownLoadParts')?.querySelector('.operate-left');
-			if (!!targetArea) {
+			if (!!targetArea && situation === 'kcms2') {
 				let fileID = FetchFileID('kns', currentUrl);
 				if (fileID.target[0] !== 'clear') {
 					const kcmsConvert = {
@@ -229,7 +229,7 @@
 				} else {
 					window.stop();
 					GM_setValue('source', { sourceUrl: currentUrl, fileID: fileID });
-					let candidates = GenerateCnkiUrls(fileID), targetUrl = candidates.shift();
+					let candidates = GenerateCnkiUrls(fileID, 'kcms'), targetUrl = candidates.shift();
 					GM_setValue('candidates', candidates);
 					window.location.replace(targetUrl);
 				}
