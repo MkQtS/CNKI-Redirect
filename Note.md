@@ -68,10 +68,7 @@ if (!cmnDB.includes(dbcode)) {
 
 <details>
 
-脚本在获取到dbcode和filename以后通过`GenerateCnkiUrls`函数生成目标链接数组，可以修改此函数来改变最终到达的链接。可能的场景：
-
-1. 使用英文或繁体中文版知网
-2. 使用所在机构建立的知网本地镜像
+脚本在获取到dbcode和filename以后通过`GenerateKcmsUrl`函数生成目标链接数组，可以修改此函数来改变最终到达的链接（例如使用所在机构建立的知网本地镜像）。
 
 注意：
 

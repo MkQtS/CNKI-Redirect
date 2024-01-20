@@ -2,7 +2,7 @@
 // @name         知网重定向 — 便于使用机构IP登录下载
 // @namespace    cnki_redirector
 // @description  将来自知网主站、知网空间、知网编客、知网百科、知网阅读、知网文化、知网法律、知网医院数字图书馆、手机知网等站点的知网文献页重定向至知网主站`kns.cnki.net`，支持获取知网文献无追踪链接。
-// @version      4.9
+// @version      5.0
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAB10lEQVQ4jZVSP8hpcRj+nZs6oiPkpFBkoCxnQCeT0rdQyiCZDAwYTOQsBsOR/aRshlMymsSK/JkMysDgz3KOZDmO8t/vDu79fO51b33P9r71vO/7PO+DwKIbfAuw6Ia/IQhCPB6nKEoURfgWRbfkK/l0OrXb7dlsZrPZIpHI2wU/vha322273fp8Pq/X+6+LXgij0Wi32+VyueVymc1m1+v1/zRsNhuCIFQqVSwWUyqVarV6Op1+Hs9xnCiKsOh+Emia/pyi0+mazSaE8HK59Pv9TCbjcDjy+fyL6FAohGEYwzD3+73RaJjN5mq1utlsptOpxWK5Xq/dbhd8vNq63+8ZhjEajbVabbFYGAyGRCJxPB5Pp1MwGOx0Os8Nk8mE4zipVDoYDFarVblcdjqdBEFgGIaiaKVSQRDE5XKBHpAAAHie93g85/PZbrfP53OKotLptEajsVqtrVZLJpPRNO33+w+HAwaABAAAISRJEsfxbDZbr9f1er1Go0EQJJVKDYfDXq9XKpU8Ho9cLn/aKgjCw9lAIFAoFMLh8Gw2e3T2+/2baCgUCp7no9EoSZLRaNRkMkEIWZbFcfyPv/0ijMfjh6HJZFKr1bIsi6KoRCIBfwH5brx/AseDLUJKQoGcAAAAAElFTkSuQmCC
 // @author       MkQtS
 // @license      MIT
@@ -153,13 +153,12 @@
 		return fileID;
 	}
 
-	function GenerateCnkiUrls(fileID, pref) { // todo: find a proper way to generate kcms2 link
-		const kcmsHead = 'https://kns.cnki.net/kcms/detail/detail.aspx?', kcms2Head = 'https://kns.cnki.net/kns8/detail?sfield=fn&';
+	function GenerateKcmsUrl(fileID) { // maybe generate kcms2 link
 		let cnkiUrls = ['clear'], dbFiles = [fileID.alter, fileID.target].filter(dbfile => !!dbfile);
+		const kcmsHEAD = 'https://kns.cnki.net/kcms/detail/detail.aspx?';
 		dbFiles.forEach(dbfile => {
-			let cnkiHead, fileinfo = 'dbcode=' + dbfile[0] + '&filename=' + dbfile[1];
-			pref === 'kcms' ? cnkiHead = kcmsHead : cnkiHead = kcms2Head;
-			cnkiUrls.unshift(cnkiHead + fileinfo);
+			let fileparam = 'dbcode=' + dbfile[0] + '&filename=' + dbfile[1];
+			cnkiUrls.unshift(kcmsHEAD + fileparam);
 		});
 		return cnkiUrls;
 	}
@@ -189,24 +188,30 @@
 			break;
 		} case 'kcms':
 		case 'kcms2': {
-			let targetArea = document.getElementById('DownLoadParts')?.querySelector('.operate-btn') || document.getElementById('DownLoadParts')?.querySelector('.operate-left');
-			if (!!targetArea && situation === 'kcms2') {
-				let fileID = FetchFileID('kns', currentUrl);
-				if (fileID.target[0] !== 'clear') {
-					const kcmsConvert = {
-						kcms: { prefType: 'kcms2', btnText: '🍋 打开KCMS2', btnTitle: 'KCMS2链接能显示更多内容（如硕博论文全文PDF），但链接参数可能被知网追踪' },
-						kcms2: { prefType: 'kcms', btnText: '🍋 打开KCMS', btnTitle: 'KCMS链接更简洁不含跟踪参数，但页面可能缺少部分内容' }
-					};
-					let [rivalUrl, rivalText, rivalTitle] = [GenerateCnkiUrls(fileID, kcmsConvert[situation].prefType)[0], kcmsConvert[situation].btnText, kcmsConvert[situation].btnTitle];
-					const rivalBtn = `<li class='btn-go2rvl'><a id='go2rvl' href='${rivalUrl}' target='_blank' title='${rivalTitle}' style='background-color: #6a8; color: #fff'>${rivalText}</a></li>`;
-					targetArea.insertAdjacentHTML('beforeend', rivalBtn);
-				}
-			}
 			let storedSrc = GM_getValue('source') || { sourceUrl: 'clear', fileID: defFileID };
 			if (storedSrc.sourceUrl !== 'clear') {
 				GM_setValue('candidates', ['clear']);
 				GM_setValue('source', { sourceUrl: 'clear', fileID: defFileID });
-				if (!!targetArea) {
+			}
+
+			let targetArea = document.getElementById('DownLoadParts')?.querySelector('.operate-btn') || document.getElementById('DownLoadParts')?.querySelector('.operate-left');
+			if (!targetArea) {
+				console.debug('[CNKI-Redirect] buttons area not found.');
+			} else {
+				let fileID = FetchFileID('kns', currentUrl);
+				if (fileID.target[0] !== 'clear') {
+					if (situation === 'kcms2') {
+						const kcmsBtnText = '🍋 打开KCMS', kcmsBtnTitle = 'KCMS链接不含跟踪参数，但页面可能缺少部分内容';
+						let kcmsUrl = GenerateKcmsUrl(fileID)[0];
+						const kcmsBtn = `<li class='btn-go2kcms'><a id='go2kcms' href='${kcmsUrl}' target='_blank' title='${kcmsBtnTitle}' style='background-color: #6a8; color: #fff'>${kcmsBtnText}</a></li>`;
+						targetArea.insertAdjacentHTML('beforeend', kcmsBtn);
+					} else if (fileID.target[0] === 'CDMD') {
+						let pdfLink = 'https://pay.cnki.net/zscsdoc/download?flag=cnkispace&plat=cnkispace&filename=' + fileID.target[1] + '&dbtype=CDMD&dtype=pdf';
+						const pdfBtn = `<li class='btn-dlpdf'><a target='_blank' name='pdfDown' href='${pdfLink}'><i></i>PDF下载</a></li>`;
+						targetArea.insertAdjacentHTML('beforeend', pdfBtn);
+					}
+				}
+				if (storedSrc.sourceUrl !== 'clear') {
 					const srcBtn = `\n<li class='btn-go2src'><a id='go2src' title='${storedSrc.sourceUrl}' style='background-color: #9a5; color: #fff'>🥝 打开源页面</a></li>`;
 					targetArea.insertAdjacentHTML('beforeend', srcBtn);
 					document.getElementById('go2src').addEventListener('click', () => {
@@ -229,7 +234,7 @@
 				} else {
 					window.stop();
 					GM_setValue('source', { sourceUrl: currentUrl, fileID: fileID });
-					let candidates = GenerateCnkiUrls(fileID, 'kcms'), targetUrl = candidates.shift();
+					let candidates = GenerateKcmsUrl(fileID), targetUrl = candidates.shift();
 					GM_setValue('candidates', candidates);
 					window.location.replace(targetUrl);
 				}
